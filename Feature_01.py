@@ -1,6 +1,13 @@
 #Placeholder
 
-def even_numbers(n):
-    """Return a list of even numbers up to n."""
-    return [i for i in range(n) if i % 2 == 0]
-
+def prime_Numbers (n):
+    primes = []
+    for num in range(2, n + 1):
+        is_prime = True
+        for i in range(2, int(num**0.5) + 1):
+            if num % i == 0:
+                is_prime = False
+                break
+        if is_prime:
+            primes.append(num)
+    return primes
