@@ -9,7 +9,7 @@ write = st.write
 
 
 write("# Gruppenarbeit")
-write("This is our Gruoprojekt, here should be all the work we do together.")
+write("This is our Grouprojekt, here should be all the work we do together.")
 
 
 
