@@ -1,6 +1,7 @@
 #Placeholder
 
 def prime_Numbers (n):
+    # Return a list of prime numbers up to n (inclusive).
     primes = []
     for num in range(2, n + 1):
         is_prime = True

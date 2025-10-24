@@ -1,20 +1,17 @@
 import streamlit as st
 
-
+# Importing features from other files 
 from Feature_01 import prime_Numbers 
 from Feature_02 import even_numbers 
 
-
-
-
+# Alias for easier typing
 write = st.write
 
 
-
 write("# Gruppenarbeit")
-write("This is our Gruopprojekt, here should be all the work we do together.")
-print(" I switched write.st to write for easier typing ")
+write("This is our Gruoprojekt, here should be all the work we do together.")
 
-write(prime_Numbers (20))
 
-write(even_numbers(15))
+
+
+
