@@ -5,7 +5,7 @@
 - Commit and push your changes before closing the workspace.
 - Why this matters: leaving the remote workspace open can cause stale state and increase the chance of merge conflicts.
 
-## Demo App
+## UnsereAPP:Namen!
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gruppenprojekt-uy34qhoxjjxg5kfzxfxubw.streamlit.app/)
 
