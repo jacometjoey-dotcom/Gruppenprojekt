@@ -26,7 +26,7 @@ Properties = [
         "Building Year": 1910,
         "min_investment": "Fr. 30'000"
         },
-        "pdf_factsheet_property": "https://example.com/factsheet1.pdf"
+        "pdf_factsheet_property": "factsheet/Factsheet 1.pdf"
     },
 
 
