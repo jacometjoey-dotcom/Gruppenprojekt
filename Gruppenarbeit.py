@@ -88,8 +88,9 @@ st.write("Please choose a property to see more details.")
 
 
 st.header("Locations of the Properties")
-# create the map and show were the properties are located and find the lat and lon from the properties list(Dictionaries)
-
+# create the map and show were the properties are located 
+# and find the lat and lon from the properties list(Dictionaries) 
+# ith a list comprehension to iterate through the properties
 map_data = pd.DataFrame(
     [{
         "lat": prop["lat"],
@@ -104,15 +105,16 @@ st.map(map_data, zoom=7)
 #List of properties with selectbox to choose from
 
 for prop in Properties: 
-    #each property will be displayed in a separate section
+    #each property will be displayed in a separate section becasue of the iteration
     with st.container (border=True):
     #here should the border be visible
+    #and we create two columns, one for the image and one for the info
         spalte_Bild, spalte_Info = st.columns([1, 2])
 
     #Image column, Info column
         with spalte_Bild:
             st.image(prop["images"][0], use_container_width=True) 
-            # shows the first image while iterating through the properties
+            # shows the first image in the image list of the property
         with spalte_Info:
             # shows the property information while iterating through the properties
             st.subheader(prop["title"])
@@ -126,7 +128,7 @@ for prop in Properties:
 
             # Show the image gallery
             st.subheader("Image Gallery")
-            # This creates the tabs for the images
+            # This creates the tabs for the images while
             image_tabs = st.tabs([f"Image {i+1}" for i in range(len(prop["images"]))])
             for tab, img_url in zip(image_tabs, prop["images"]):
                 with tab:
@@ -170,10 +172,6 @@ for prop in Properties:
                 prop["pdf_factsheet_property"], 
                 use_container_width=True
                 )
-
-
-
-
 
      
 
