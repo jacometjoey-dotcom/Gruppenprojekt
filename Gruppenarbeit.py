@@ -26,7 +26,7 @@ Properties = [
         "Building Year": 1910,
         "min_investment": "Fr. 30'000"
         },
-        "pdf_factsheet_property": "factsheet/Factsheet 1.pdf"
+        "pdf_factsheet_property": "factsheet/Factsheet1.pdf"
     },
 
 
@@ -45,7 +45,7 @@ Properties = [
         "Building Year": 2015,
         "min_investment": "Fr. 45'000"
         },
-     "pdf_factsheet_property": "https://example.com/factsheet2.pdf"
+     "pdf_factsheet_property": "factsheet/Factsheet2.pdf"
     }, 
     {"name":"Property 3",
      "title":"Family friendly townhouse",
@@ -62,7 +62,7 @@ Properties = [
             "Building Year": 2010,
             "min_investment": "Fr. 60'000"
         },
-        "pdf_factsheet_property": "https://example.com/factsheet3.pdf"
+        "pdf_factsheet_property": "factsheet/Factsheet3.pdf"
     },
     {"name":"Property 4",
      "title":"Historical Townhous in the heart of the city",
@@ -79,7 +79,7 @@ Properties = [
             "Building Year": 1900,
             "min_investment": "Fr. 85'000"
         },
-        "pdf_factsheet_property": "https://example.com/factsheet4.pdf"
+        "pdf_factsheet_property": "factsheet/Factsheet4.pdf"
     }
 ]   
 
