@@ -142,7 +142,7 @@ for prop in Properties:
                 # Investment slider
                 st.subheader("Your Investment")
                 # Slider for investment amount, minimum 0 and maximum 1,000,000 with step size of 1000
-                investment_amount = st.slider("Select your investment amount:", prop("min_investment"), 1000000, 500000, 1000, key=f"investement_slider_{prop['name']}")
+                investment_amount = st.slider("Select your investment amount:", prop["facts"]["min_investment"], 1000000, 500000, 1000, key=f"investement_slider_{prop['name']}")
                 st.write(f"You selected: ${investment_amount}")
 
                 st.subheader ("Time of Investment")
