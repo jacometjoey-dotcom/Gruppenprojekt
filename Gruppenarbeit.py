@@ -84,7 +84,7 @@ Properties = [
     }
 ]   
 st.title(":red[Real Estate Investment Platform]")
-st.divider
+st.divider()
 
 st.header("Real Estate Properties Overview") 
 st.badge("Please choose a property to see more details.", color="red")
