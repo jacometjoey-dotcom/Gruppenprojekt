@@ -83,7 +83,7 @@ Properties = [
         "pdf_factsheet_property": "factsheet/Factsheet4.pdf"
     }
 ]   
-st.title("red[Real Estate Investment Platform]")
+st.title(":red[Real Estate Investment Platform]")
 st.header("Real Estate Properties Overview") 
 st.write("Please choose a property to see more details.")
 
