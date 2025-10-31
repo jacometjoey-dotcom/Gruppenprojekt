@@ -139,10 +139,11 @@ for prop in Properties:
             # Divided so now we can have the slider/chart layout and the facts box side by side
             spalte_invest, spalte_facts = st.columns([2, 1]) # Main content 2/3, Facts box 1/3
             with spalte_invest:
+                min_investment_int = int(prop["facts"]["min_investment"].replace("'", "").replace("Fr. ", ""))
                 # Investment slider
                 st.subheader("Your Investment")
                 # Slider for investment amount, minimum 0 and maximum 1,000,000 with step size of 1000
-                investment_amount = st.slider("Select your investment amount:", prop["facts"]["min_investment"], 1000000, 500000, 1000, key=f"investement_slider_{prop['name']}")
+                investment_amount = st.slider("Select your investment amount:", min_investment_int, 1000000, min_investment_int, 1000, key=f"investement_slider_{prop['name']}")
                 st.write(f"You selected: ${investment_amount}")
 
                 st.subheader ("Time of Investment")
