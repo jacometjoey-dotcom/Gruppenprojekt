@@ -24,7 +24,7 @@ Properties = [
         "size": "120 sqm",
         "rooms": 3,
         "Building Year": 1910,
-        "min_investment": "Fr. 30'000"
+        "min_investment": "30'000"
         },
         "pdf_factsheet_property": "factsheet/Factsheet1.pdf"
     },
@@ -43,7 +43,7 @@ Properties = [
         "size": "150 sqm",
         "rooms": 4,
         "Building Year": 2015,
-        "min_investment": "Fr. 45'000"
+        "min_investment": "45'000"
         },
      "pdf_factsheet_property": "factsheet/Factsheet2.pdf"
     }, 
@@ -60,7 +60,7 @@ Properties = [
             "size": "230 sqm",
             "rooms": 8,
             "Building Year": 2010,
-            "min_investment": "Fr. 60'000"
+            "min_investment": "60'000"
         },
         "pdf_factsheet_property": "factsheet/Factsheet3.pdf"
     },
@@ -77,7 +77,7 @@ Properties = [
             "size": "160 sqm",
             "rooms": 6,
             "Building Year": 1900,
-            "min_investment": "Fr. 85'000"
+            "min_investment": "85'000"
         },
         "pdf_factsheet_property": "factsheet/Factsheet4.pdf"
     }
@@ -142,7 +142,7 @@ for prop in Properties:
                 # Investment slider
                 st.subheader("Your Investment")
                 # Slider for investment amount, minimum 0 and maximum 1,000,000 with step size of 1000
-                investment_amount = st.slider("Select your investment amount:", prop("min_investment"), 1000000, 500000, 1000, key=f"investement_slider_{prop['name']}")
+                investment_amount = st.slider("Select your investment amount:", int(prop("min_investment")), 1000000, 500000, 1000, key=f"investement_slider_{prop['name']}")
                 st.write(f"You selected: ${investment_amount}")
 
                 st.subheader ("Time of Investment")
