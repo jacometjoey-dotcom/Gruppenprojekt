@@ -142,8 +142,17 @@ for prop in Properties:
                 # Investment slider
                 st.subheader("Your Investment")
                 # Slider for investment amount, minimum 0 and maximum 1,000,000 with step size of 1000
-                investment_amount = st.slider("Select your investment amount:", 0, 1000000, 500000, 1000, key=f"investement_slider_{prop['name']}")
+                investment_amount = st.slider("Select your investment amount:", prop("min_investment"), 1000000, 500000, 1000, key=f"investement_slider_{prop['name']}")
                 st.write(f"You selected: ${investment_amount}")
+
+                st.subheader ("Time of Investment")
+                # Slider for investment duration, minimum 1 year and maximum 30 years with step size
+                investment_duration = st.slider("Select investment duration (years):", 1, 30, 10, 1, key=f"investment_duration_{prop['name']}")
+                st.write(f"You selected: {investment_duration} years")
+
+            
+        
+        
 
             with spalte_facts:
                 # Facts box
@@ -163,6 +172,8 @@ for prop in Properties:
                 columns=["Your Investment", "XXX"]
             )
             st.line_chart(chart_data)
+
+        
 
             st.divider()
 
