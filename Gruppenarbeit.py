@@ -9,6 +9,7 @@ st.set_page_config(
 )
 
 
+
 Properties = [
     #Here are the property data in a list of dictionaries
     {"name":"Property 1",
@@ -82,8 +83,8 @@ Properties = [
         "pdf_factsheet_property": "factsheet/Factsheet4.pdf"
     }
 ]   
-
-st.title("Real Estate Properties Overview") 
+st.title("red[Real Estate Investment Platform]")
+st.header("Real Estate Properties Overview") 
 st.write("Please choose a property to see more details.")
 
 
