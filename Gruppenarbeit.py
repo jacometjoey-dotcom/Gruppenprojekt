@@ -90,7 +90,7 @@ st.header("Real Estate Properties Overview")
 st.badge("Please choose a property to see more details.", color="red")
 
 
-st.header("Locations of the Properties")
+st.subheader("Locations of the Properties")
 # create the map and show were the properties are located 
 # and find the lat and lon from the properties list(Dictionaries) 
 # ith a list comprehension to iterate through the properties
