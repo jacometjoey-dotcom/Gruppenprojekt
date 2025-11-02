@@ -179,19 +179,10 @@ for prop in Properties:
             st.line_chart(chart_data)
 
         
-
-            st.divider()
-
-             #pdf factsheet link download button
-            st.link_button(
-                "Download PDF Factsheet",
-                prop["pdf_factsheet_property"], 
-                use_container_width=True
-                )
             
             st.divider()
 
-            with open ("factsheet/Factsheet1.pdf", "rb") as f:
+            with open (f"factsheet/{prop["pdf_factsheet_property"]}", "rb") as f:
                 st.download_button(
                     label="Download Factsheet PDF",
                     data=f,
