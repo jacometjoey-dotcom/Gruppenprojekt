@@ -182,7 +182,7 @@ for prop in Properties:
             
             st.divider()
 
-            with open (f"]{prop['pdf_factsheet_property']}", "rb") as f:
+            with open (f"{prop['pdf_factsheet_property']}", "rb") as f:
                 st.download_button(
                     label="Download Factsheet PDF",
                     data=f,
