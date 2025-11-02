@@ -185,9 +185,10 @@ for prop in Properties:
              #pdf factsheet link download button
             st.link_button(
                 "Download PDF Factsheet",
-                prop[f"pdf_factsheet_property for {prop['name']}"], 
+                prop["pdf_factsheet_property"], 
                 use_container_width=True
                 )
+            
             st.divider()
 
             with open ("factsheet/Factsheet1.pdf", "rb") as f:
