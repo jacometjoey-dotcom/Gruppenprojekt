@@ -108,7 +108,7 @@ st.map(map_data, zoom=7)
 #List of properties with selectbox to choose from
 
 for prop in Properties: 
-    #each property will be displayed in a separate section becasue of the iteration
+    #each property will be displayed in a separate section because of the iteration
     with st.container (border=True):
     #here should the border be visible
     #and we create two columns, one for the image and one for the info
@@ -181,7 +181,7 @@ for prop in Properties:
         
             
             st.divider()
-
+            #open the pdf factsheet and create a download button
             with open (f"{prop['pdf_factsheet_property']}", "rb") as f:
                 st.download_button(
                     label="Download Factsheet PDF",
