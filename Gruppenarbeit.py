@@ -248,17 +248,17 @@ for prop in Properties:
             import os
 
 #A:Fixed the Bugs in the bugs in the code Below, now it allows the downloads effectively 
-
-try:
-    with open(prop["pdf_factsheet_property"], "rb") as f:
-        st.download_button(
-            label="Download Factsheet PDF",
-            data=f,
-            file_name=f"Factsheet_{prop['name']}.pdf",
-            mime="application/pdf"
-        )
-except FileNotFoundError:
-    st.info("Factsheet PDF not available.")
+#J: Put the PDF download button in the for loop so that each property has its own download button
+    try:
+        with open(prop["pdf_factsheet_property"], "rb") as f:
+         st.download_button(
+                label="Download Factsheet PDF",
+                data=f,
+                file_name=f"Factsheet_{prop['name']}.pdf",
+                mime="application/pdf"
+         )
+    except FileNotFoundError:
+     st.info("Factsheet PDF not available.")
 
 
      
