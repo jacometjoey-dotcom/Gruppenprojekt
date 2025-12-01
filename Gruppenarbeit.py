@@ -1,13 +1,36 @@
+import os
+import sqlite3
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import pydeck as pdk
+from sklearn.linear_model import LinearRegression
+
+
+# A: base dir + helper to resolve paths so images always load correctly
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def resolve_path(rel_path: str) -> str:
+    """Return absolute path for a file inside the project."""
+    return os.path.join(BASE_DIR, rel_path)
+
+
+# A: small debug – list images folder if it exists
+images_dir = resolve_path("images")
+if os.path.isdir(images_dir):
+    print("DEBUG — images Ordner Inhalt:", os.listdir(images_dir))
+else:
+    print("DEBUG — images Ordner nicht gefunden unter:", images_dir)
+
 
 st.set_page_config(
     #With this the page title and layout are set
     page_title="Here should be our app title",
     layout="wide"
 )
+
 #A: The next section is relevant for the Calculation section of the app, here Ivan created a whole lot of functions to cope with python shortcomings regarding number formatting and input validation
 
 # The following helper functions are used to format and validate user inputs and outputs related to money, percentages, and years.
@@ -19,15 +42,18 @@ def format_thousands_ch(num: float, decimals: int = 0) -> str:
         s = s.split(",")[0]
     return s
 
+
 def show_money(n: float | None) -> str:
     if n is None:
         return ""
     return f"{format_thousands_ch(n, 0)} CHF"
 
+
 def show_percent(ratio: float | None) -> str:
     if ratio is None:
         return ""
     return f"{ratio*100:.2f}%"
+
 
 def show_years(y: float | None) -> str:
     if y is None:
@@ -43,6 +69,7 @@ def strip_common_bits(text: str) -> str:
     s = s.replace("%", "")
     return s
 
+
 def check_number_input(label: str, text: str):
     if text is None or str(text).strip() == "":
         return None, f"{label}: is required and must be a number."
@@ -52,6 +79,7 @@ def check_number_input(label: str, text: str):
         return float(s), None
     except ValueError:
         return None, f"{label}: must be a valid number (e.g., 3’700’000 or 3700000)."
+
 
 def check_years_input(label: str, text: str):
     if text is None or str(text).strip() == "":
@@ -68,6 +96,7 @@ def check_years_input(label: str, text: str):
     if val <= 0:
         return None, f"{label}: must be greater than 0."
     return val, None
+
 
 def check_percent_input(label: str, text: str):
     if text is None or str(text).strip() == "":
@@ -86,6 +115,7 @@ def check_percent_input(label: str, text: str):
     if ratio > 1:
         return None, f"{label}: cannot exceed 100%."
     return ratio, None
+
 
 def check_crowdfunder_count(label: str, text: str):
     if text is None or str(text).strip() == "":
@@ -109,6 +139,7 @@ def touchup_money_key(key: str):
     if err is None:
         st.session_state[key] = show_money(val)
 
+
 def touchup_percent_key(key: str):
     raw = st.session_state.get(key, "")
     if raw is None or str(raw).strip() == "":
@@ -116,6 +147,7 @@ def touchup_percent_key(key: str):
     ratio, err = check_percent_input("", raw)
     if err is None:
         st.session_state[key] = show_percent(ratio)
+
 
 def touchup_years_key(key: str):
     raw = st.session_state.get(key, "")
@@ -125,15 +157,15 @@ def touchup_years_key(key: str):
     if err is None:
         st.session_state[key] = show_years(years_val)
 
+
 def show_readonly(label: str, value: str):
     if value:
         st.text_input(label, value=value, disabled=True)
 
+
 def show_highlight_green(label: str, value: str):
     if value:
         st.success(f"{label}: {value}")
-
-
 
 
 #THE OVERALL CODE STRUCTURE IS THE FOLLOWING:
@@ -141,122 +173,204 @@ def show_highlight_green(label: str, value: str):
 #second we have the CALCULATION SECTION, for the investment calculations
 
 
+# A: DB init – create / refresh investment_returns.db with sample data
 
+def reset_returns_table():
+    db_path = resolve_path("investment_returns.db")
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    cur.execute("DROP TABLE IF EXISTS returns;")
+    cur.execute(
+        """
+        CREATE TABLE returns (
+            year    INTEGER PRIMARY KEY,
+            stocks  REAL,
+            bonds   REAL,
+            savings REAL,
+            re_fund REAL
+        );
+        """
+    )
+
+    rows = [
+        (2019, 0.3099,  0.020,  0.010,  0.150),
+        (2020, 0.1994,  0.015,  0.008, -0.020),
+        (2021, 0.2993,  0.010,  0.006,  0.100),
+        (2022, -0.1876, -0.050, 0.015, -0.080),
+        (2023, 0.2762,  0.020,  0.035,  0.060),
+        (2024, 0.2448,  0.018,  0.040,  0.050),
+    ]
+
+    cur.executemany(
+        """
+        INSERT INTO returns (year, stocks, bonds, savings, re_fund)
+        VALUES (?, ?, ?, ?, ?);
+        """,
+        rows
+    )
+
+    conn.commit()
+    conn.close()
+
+
+reset_returns_table()  # A: call once at startup so DB is always there
+
+
+# This function loads investment data from SQLite-DB
+def load_returns():
+    db_path = resolve_path("investment_returns.db")
+
+    try:
+        #making connection to database
+        conn = sqlite3.connect(db_path)
+
+        query = """
+        SELECT
+            year,
+            stocks,
+            bonds,
+            savings,
+            re_fund
+        FROM returns
+        ORDER BY year;
+        """
+
+        df = pd.read_sql_query(query, conn)
+
+        conn.close()
+
+        if df.empty:
+            return None
+
+        return df
+
+    except Exception as e:
+        st.warning(f"Error loading data from database: {e}")
+        return None
 
 
 # A: HERE IS THE CODE SECTION OF THE PROPERTIES DATA
 
 Properties = [
     #Here are the property data stored in a list of dictionaries
-    {"name":"Property 1",
-     "title":"Stylish 6 Apartment old-building in the city center",
-     "locations_name":"Zurich, Aussershil",
+    {"id": 1,
+     "name": "Property 1",
+     "title": "Stylish 6 Apartment old-building in the city center",
+     "locations_name": "Zurich, Aussershil",
      "lat": 47.3776,
      "lon": 8.5268,
      "description": "This stylish old-building apartment is located in the heart of Zurich's Aussershil district. Featuring six spacious apartments, this property combines classic architecture with modern amenities, offering a unique living experience in one of the city's most vibrant neighborhoods.",
-     "images": ["images/Prop1_A1.png"
-                ,"images/Prop1_I1.png"
-                ,"images/Prop1_I2.png"],
-        "facts": {
-        "price": "Fr. 1'450'000",
-        "size": "120 sqm",
-        "rooms": 3,
-        "Building Year": 1910,
-        "min_investment": "Fr. 30'000"
-        },
-        "pdf_factsheet_property": "factsheet/Factsheet1.pdf"
-    },
+     "images": [
+         "images/Prop1_A1.png",
+         "images/Prop1_I1.png",
+         "images/Prop1_I2.png"
+     ],
+     "facts": {
+         "price": "Fr. 1'450'000",
+         "size": "120 sqm",
+         "rooms": 3,
+         "Building Year": 1910,
+         "min_investment": "Fr. 30'000"
+     },
+     "pdf_factsheet_property": "factsheet/Factsheet1.pdf"
+     },
 
-
-    {"name":"Property 2",
-     "title":"Modern penthouse with city and LAKE view",
-     "locations_name":"Luzern, Tribschen",
+    {"id": 2,
+     "name": "Property 2",
+     "title": "Modern penthouse with city and LAKE view",
+     "locations_name": "Luzern, Tribschen",
      "lat": 47.0502,
      "lon": 8.3064,
-        "description": "Contemporary penthouse located in the Tribschen area of Luzern, offering stunning city and lake views. This modern residence features open-concept living spaces, high-end finishes, and a private terrace, perfect for enjoying the picturesque surroundings and vibrant city life.",
-     "images": ["images/Prop2_A1.png"
-                ,"images/Prop2_I1.png"
-                ,"images/Prop2_I2.png"],
-        "facts": {
-        "price": "Fr. 1'750'000",
-        "size": "150 sqm",
-        "rooms": 4,
-        "Building Year": 2015,
-        "min_investment": "Fr. 45'000"
-        },
+     "description": "Contemporary penthouse located in the Tribschen area of Luzern, offering stunning city and lake views. This modern residence features open-concept living spaces, high-end finishes, and a private terrace, perfect for enjoying the picturesque surroundings and vibrant city life.",
+     "images": [
+         "images/Prop2_A1.png",
+         "images/Prop2_I1.png",
+         "images/Prop2_I2.png"
+     ],
+
+     "facts": {
+         "price": "Fr. 1'750'000",
+         "size": "150 sqm",
+         "rooms": 4,
+         "Building Year": 2015,
+         "min_investment": "Fr. 45'000"
+     },
      "pdf_factsheet_property": "factsheet/Factsheet2.pdf"
-    }, 
-    {"name":"Property 3",
-     "title":"Family Townhouse with big garden and BBQ area",
-     "locations_name":"Oerlikon",
+     },
+    {"id": 3,
+     "name": "Property 3",
+     "title": "Family Townhouse with big garden and BBQ area",
+     "locations_name": "Oerlikon",
      "lat": 47.4144,
      "lon": 8.5281,
-        "description": "Spacious family townhouse located in the Oerlikon district, featuring a large garden and BBQ area. This property offers ample living space, modern amenities, and a perfect setting for family gatherings and outdoor activities.",
-     "images": ["images/Prop3_A1.png"
-                ,"images/Prop3_I1.png"
-                ,"images/Prop3_I2.png"],
+     "description": "Spacious family townhouse located in the Oerlikon district, featuring a large garden and BBQ area. This property offers ample living space, modern amenities, and a perfect setting for family gatherings and outdoor activities.",
+     "images": [
+         "images/Prop3_A1.png",
+         "images/Prop3_I1.png",
+         "images/Prop3_I2.png"
+     ],
+     "facts": {
+         "price": "Fr. 2'600'000",
+         "size": "230 sqm",
+         "rooms": 8,
+         "Building Year": 2010,
+         "min_investment": "Fr. 60'000"
+     },
+     "pdf_factsheet_property": "factsheet/Factsheet3.pdf"
+     },
+    {
+        "id": 4,
+        "name": "Property 4",
+        "title": "Historical Townhouse in the heart of the city",
+        "locations_name": "St.Gallen, Museumsquartier",
+        "lat": 47.423821,
+        "lon": 9.376152,
+        "description": "Charming historical townhouse located in the Museumsquartier of St.Gallen. This beautifully preserved property features classic architecture, spacious interiors, and a rich history, offering a unique living experience in the heart of the city.",
+        "images": [
+            "images/Prop4_A1.png",
+            "images/Prop4_I1.png",
+            "images/Prop4_I2.png"
+        ],
         "facts": {
-            "price": "Fr. 2'600'000",
-            "size": "230 sqm",
-            "rooms": 8,
-            "Building Year": 2010,
-            "min_investment": "Fr. 60'000"
-        },
-        "pdf_factsheet_property": "factsheet/Factsheet3.pdf"
-    },
-    {"name":"Property 4",
-     "title":"Historical Townhouse in the heart of the city",
-     "locations_name":"St.Gallen, Museumsquartier",
-     "lat": 47.423821,
-     "lon": 9.376152,
-     "description": "Charming historical townhouse located in the Museumsquartier of St.Gallen. This beautifully preserved property features classic architecture, spacious interiors, and a rich history, offering a unique living experience in the heart of the city.",
-     "images": ["images/Prop4_A1.png"
-                ,"images/Prop4_I1.png"
-                ,"images/Prop4_I2.png"],
-        "facts":{
             "price": "Fr. 4'600'000",
             "size": "200 sqm",
             "rooms": 4.5,
             "Building Year": 2020,
             "min_investment": "Fr. 230'000"
         },
-            "pdf_factsheet_property": "factsheet/Factsheet4.pdf"
-        },
-        {"name":"Property 5",
-         "title":"Penthouse by the lake Lugano, a twist of amazing view and modern design",
-         "locations_name":"Paradiso, Lugano",
-         "lat": 46.0037,
-         "lon": 8.9556,
-         "description": "Luxury penthouse offering panoramic lake views, modern architecture, and premium amenities in Paradiso, Lugano. This exclusive residence features spacious rooms, private terrace, and top-tier finishes, ideal for sophisticated urban living.",
-         "images": ["images/ChatGPT Image Nov 9, 2025 at 05_15_42 PM.png"
-                    ,"images/ChatGPT Image Nov 9, 2025 at 05_15_44 PM.png"
-                    ,"images/ChatGPT Image Nov 9, 2025 at 05_15_45 PM.png"],
-            "facts": {
-            "price": "Fr. 5'750'000",
-            "size": "150 sqm",
-            "rooms": 4,
-            "Building Year": 2015,
-            "min_investment": "Fr. 76'000"
-            },
-         "pdf_factsheet_property": "factsheet/Factsheet2.pdf"
-        }
-    ]   
+        "pdf_factsheet_property": "factsheet/Factsheet4.pdf"
+    },
+    {"id": 5,
+     "name": "Property 5",
+     "title": "Penthouse by the lake Lugano, a twist of amazing view and modern design",
+     "locations_name": "Paradiso, Lugano",
+     "lat": 46.0037,
+     "lon": 8.9556,
+     "description": "Luxury penthouse offering panoramic lake views, modern architecture, and premium amenities in Paradiso, Lugano. This exclusive residence features spacious rooms, private terrace, and top-tier finishes, ideal for sophisticated urban living.",
+     "images": ["images/ChatGPT Image Nov 9, 2025 at 05_15_42 PM.png",
+                "images/ChatGPT Image Nov 9, 2025 at 05_15_44 PM.png",
+                "images/ChatGPT Image Nov 9, 2025 at 05_15_45 PM.png"
+                ],
+     "facts": {
+         "price": "Fr. 5'750'000",
+         "size": "150 sqm",
+         "rooms": 4,
+         "Building Year": 2015,
+         "min_investment": "Fr. 76'000"
+     },
+     "pdf_factsheet_property": "factsheet/Factsheet2.pdf"
+     }
+]
+
 
 st.title(":red[Real Estate Investment Platform]")
 st.divider()
 
-st.header("Real Estate Properties Overview") 
+st.header("Real Estate Properties Overview")
 st.warning("Please choose a property to see more details.")
 
-
-
 st.subheader("Locations of the Properties")
-# create the map and show were the properties are locate 
-# and find the lat and lon from the properties list(Dictionaries) 
-# ith a list comprehension to iterate through the properties
-
-
-
 
 map_data = pd.DataFrame(
     [{
@@ -265,10 +379,6 @@ map_data = pd.DataFrame(
         "name": prop["title"]
     } for prop in Properties]
 )
-#Zoom in so it is more clear where the properties are located
-#A: here i added the pydeck library (which i found on streamlit) to create the map, so that we can change certain details of the map
-# like the size of the dots and the color of the dots
-
 
 #A: here i built a tooltip to show the property name and image when hovering over the dots on the map, so that a user can see more information about the property
 
@@ -277,10 +387,7 @@ BASE_URL = "https://raw.githubusercontent.com/jacometjoey-dotcom/Gruppenprojekt/
 rows = []
 for prop in Properties:
     # Use first image for the tooltip preview
-    img_path = prop["images"][0]  
-
-    #A: Convert local path to GitHub raw URL, which is accessible online, unfortunately streamlit cannot access local files for the map tooltip
-
+    img_path = prop["images"][0]
     raw_url = BASE_URL + img_path.replace(" ", "%20")
 
     rows.append({
@@ -302,7 +409,7 @@ map_layer = pdk.Layer(
     pickable=True,
 )
 
-#A: simple zoom at the beginning, nothing too fancy here 
+#A: simple zoom at the beginning, nothing too fancy here
 
 view_state = pdk.ViewState(
     latitude=46.8,
@@ -321,27 +428,23 @@ st.pydeck_chart(
     )
 )
 
-
-
-
-
-
 #A:also with this change is possible to visualize the property names when hovering over the dots on the map
 #List of properties with selectbox to choose from
 
-for prop in Properties: 
+for prop in Properties:
     #each property will be displayed in a separate section because of the iteration
-    with st.container (border=True):
-    #here should the border be visible
-    #and we create two columns, one for the image and one for the info
+    with st.container(border=True):
+        #here should the border be visible
+        #and we create two columns, one for the image and one for the info
         spalte_Bild, spalte_Info = st.columns([1, 2])
 
-#A: Changed the "use_contaier_width" to "use_column_width" in the st.image function to fix the bug
-    
-    #Image column, Info column
+        #Image column, Info column
         with spalte_Bild:
-            st.image(prop["images"][0], use_column_width=True)
-            # shows the first image in the image list of the property
+            #A: use the GitHub raw URL also for the main picture
+            img_rel = prop["images"][0]
+            img_url = BASE_URL + img_rel.replace(" ", "%20")
+            st.image(img_url, use_container_width=True)
+
         with spalte_Info:
             # shows the property information while iterating through the properties
             st.subheader(prop["title"])
@@ -350,41 +453,47 @@ for prop in Properties:
             st.text(f"Minimum Investment: {prop['facts']['min_investment']}")
             st.write(prop.get("description", ""))
 
-
-    #Button to show more details about the property/Expandable section
-    
+        #Button to show more details about the property/Expandable section
         with st.expander("Show more details"):
 
             # Show the image gallery
             st.subheader("Image Gallery")
             # This creates the tabs for the images while
             image_tabs = st.tabs([f"Image {i+1}" for i in range(len(prop["images"]))])
-            for tab, img_url in zip(image_tabs, prop["images"]):
+            for tab, img_rel in zip(image_tabs, prop["images"]):
                 with tab:
-                    st.image(img_url, use_column_width=True)
-
+                    #A: again use GitHub raw URL for gallery images
+                    img_url = BASE_URL + img_rel.replace(" ", "%20")
+                    st.image(img_url, use_container_width=True)
 
             st.divider()
 
             # Divided so now we can have the slider/chart layout and the facts box side by side
-            spalte_invest, spalte_facts = st.columns([2, 1]) # Main content 2/3, Facts box 1/3
+            spalte_invest, spalte_facts = st.columns([2, 1])  # Main content 2/3, Facts box 1/3
             with spalte_invest:
                 # Convert min_investment to integer for slider
                 min_investment_int = int(prop["facts"]["min_investment"].replace("'", "").replace("Fr. ", ""))
                 # Investment slider
                 st.subheader("Your Investment")
                 # Slider for investment amount, minimum investment and maximum 10,000,000 with step size of 1000
-                investment_amount = st.slider("Select your investment amount:", min_investment_int, 10000000, min_investment_int, 1000, key=f"investement_slider_{prop['name']}")
+                investment_amount = st.slider(
+                    "Select your investment amount:",
+                    min_investment_int,
+                    10000000,
+                    min_investment_int,
+                    1000,
+                    key=f"investement_slider_{prop['name']}"
+                )
                 st.write(f"You selected: ${investment_amount}")
 
-                st.subheader ("Time of Investment")
+                st.subheader("Time of Investment")
                 # Slider for investment duration, minimum 1 year and maximum 30 years with step size
-                investment_duration = st.slider("Select investment duration (years):", 1, 30, 10, 1, key=f"investment_duration_{prop['name']}")
+                investment_duration = st.slider(
+                    "Select investment duration (years):",
+                    1, 30, 10, 1,
+                    key=f"investment_duration_{prop['name']}"
+                )
                 st.write(f"You selected: {investment_duration} years")
-
-            
-        
-        
 
             with spalte_facts:
                 # Facts box
@@ -398,38 +507,38 @@ for prop in Properties:
                 st.write(prop.get("description", ""))
                 st.divider()
 
-            
             st.divider()
 
             # Diagram showing investment growth compared to XX over time (dummy data for now)
-            st.subheader("Investment Growth compared to XXX")
-            chart_data = pd.DataFrame(
-                np.random.randn(20, 2),
-                columns=["Your Investment", "XXX"]
-            )
-            st.line_chart(chart_data)
+            st.subheader("Historical returns of different investment types")
 
-        
-            
+            returns_df = load_returns()
+
+            if returns_df is not None:
+                chart_df = returns_df.set_index("year")
+                st.line_chart(chart_df)
+                st.caption(
+                    "Die Linien zeigen die jährlichen Renditen von Aktien, Obligationen, Sparkonto und Real-Estate-Funds."
+                )
+            else:
+                st.info("No return data available in the database.")
+
             st.divider()
             #open the pdf factsheet and create a download button
-            import os
 
-#A:Fixed the Bugs in the bugs in the code Below, now it allows the downloads effectively 
-#J: Put the PDF download button in the for loop so that each property has its own download button
-    try:
-        with open(prop["pdf_factsheet_property"], "rb") as f:
-         st.download_button(
-                label="Download Factsheet PDF",
-                data=f,
-                file_name=f"Factsheet_{prop['name']}.pdf",
-                mime="application/pdf"
-         )
-    except FileNotFoundError:
-     st.info("Factsheet PDF not available.")
+            pdf_path = resolve_path(prop["pdf_factsheet_property"])
+            if os.path.exists(pdf_path):
+                with open(pdf_path, "rb") as f:
+                    st.download_button(
+                        label="Download Factsheet PDF",
+                        data=f,
+                        file_name=f"Factsheet_{prop['name']}.pdf",
+                        mime="application/pdf"
+                    )
+            else:
+                st.info("Factsheet PDF not available.")
 
 
-     
 # A: HERE WE HAVE THE CALCULATION SECTION FOR THE INVESTMENT CALCULATIONS
 
 #A:The following function implements the project calculator UI and logic.
@@ -517,8 +626,8 @@ def show_project_calculator():
         args=("sale_price_txt",),
     )
 
-    # UI and calculations 
-    
+    # UI and calculations
+
     if st.button("Calculate"):
         error_list = []
 
@@ -534,10 +643,14 @@ def show_project_calculator():
         sale_price_input, e = check_number_input("Sale price of property", st.session_state.get("sale_price_txt")); error_list += [e] if e else []
 
         if not error_list:
-            if bank_share_percent > 1.00: error_list.append("Financing ratio (bank): cannot exceed 100%.")
-            if profit_share_percent > 1.00: error_list.append("Profit participation of crowdfunders: cannot exceed 100%.")
-            if mortgage_interest > 1.00: error_list.append("Mortgage interest rate: cannot exceed 100%.")
-            if crowdfunder_interest > 1.00: error_list.append("Interest paid to crowdfunders: cannot exceed 100%.")
+            if bank_share_percent > 1.00:
+                error_list.append("Financing ratio (bank): cannot exceed 100%.")
+            if profit_share_percent > 1.00:
+                error_list.append("Profit participation of crowdfunders: cannot exceed 100%.")
+            if mortgage_interest > 1.00:
+                error_list.append("Mortgage interest rate: cannot exceed 100%.")
+            if crowdfunder_interest > 1.00:
+                error_list.append("Interest paid to crowdfunders: cannot exceed 100%.")
 
         if error_list:
             for msg in error_list:
@@ -560,8 +673,8 @@ def show_project_calculator():
         D18 = ((D13 * C15) * C16) * C17
         D19 = D13 * C15 * 0.005 * 2
         D20 = D13 * C15 * 0.005 * 2
-        D21 = (D11*0.0475 + D50*0.0475) * 0.05 * (2/3)
-        D22 = (D11*0.0475 + D50*0.0475) * 0.05 * (2/3)
+        D21 = (D11 * 0.0475 + D50 * 0.0475) * 0.05 * (2 / 3)
+        D22 = (D11 * 0.0475 + D50 * 0.0475) * 0.05 * (2 / 3)
         D23 = D12 * 0.12
         D24 = D50 - sum([D13, D18, D19, D20, D21, D22, D23])
 
@@ -633,6 +746,129 @@ def show_project_calculator():
 
     else:
         st.caption("Adjust inputs and press **Calculate** to compute results.")
+
+
+# A: second calculator – compare crowdfunding vs stocks/bonds/savings/RE funds
+
+def show_investment_comparison():
+    st.divider()
+    st.header("Investment Comparison")
+
+    df_hist = load_returns()
+    if df_hist is None:
+        st.info("No return data available in the database.")
+        return
+
+    with st.expander("Show historical returns from database"):
+        st.dataframe(df_hist)
+
+    st.sidebar.header("Settings – Investment Comparison")
+
+    initial_investment = st.sidebar.number_input(
+        "Initial investment (CHF)",
+        min_value=1000.0,
+        max_value=1_000_000.0,
+        value=10_000.0,
+        step=500.0,
+        key="ic_initial_investment",
+    )
+
+    horizon_years = st.sidebar.slider(
+        "Investment horizon (years)",
+        min_value=3,
+        max_value=20,
+        value=10,
+        key="ic_horizon_years",
+    )
+
+    crowd_return = st.sidebar.slider(
+        "Expected yearly crowdfunding return (%)",
+        min_value=2.0,
+        max_value=15.0,
+        value=7.0,
+        step=0.5,
+        key="ic_crowd_return",
+    ) / 100.0
+
+    # Regression on historical data to forecast next N years
+    X = df_hist["year"].values.reshape(-1, 1)
+    last_year = int(df_hist["year"].max())
+    future_years = np.arange(last_year + 1, last_year + 1 + horizon_years).reshape(-1, 1)
+
+    predictions = {"year": future_years.flatten()}
+
+    for col in ["stocks", "bonds", "savings", "re_fund"]:
+        y = df_hist[col].values
+        model = LinearRegression()
+        model.fit(X, y)
+        predictions[col] = model.predict(future_years)
+
+    df_pred = pd.DataFrame(predictions)
+
+    def simulate_investment(start_value, annual_returns):
+        values = [start_value]
+        current_value = start_value
+        for r in annual_returns:
+            current_value = current_value * (1 + r)
+            values.append(current_value)
+        return values
+
+    start_year_sim = int(df_pred["year"].min()) - 1
+    years_sim = [start_year_sim] + df_pred["year"].tolist()
+
+    crowd_values = simulate_investment(initial_investment, [crowd_return] * horizon_years)
+    stocks_values = simulate_investment(initial_investment, df_pred["stocks"].values)
+    bonds_values = simulate_investment(initial_investment, df_pred["bonds"].values)
+    savings_values = simulate_investment(initial_investment, df_pred["savings"].values)
+    re_fund_values = simulate_investment(initial_investment, df_pred["re_fund"].values)
+
+    df_projection = pd.DataFrame(
+        {
+            "year": years_sim,
+            "Crowdfunding": crowd_values,
+            "Stocks": stocks_values,
+            "Bonds": bonds_values,
+            "Savings": savings_values,
+            "Real estate funds": re_fund_values,
+        }
+    )
+
+    # A: use string labels for years so Streamlit doesn’t insert thousands separators
+    df_projection["year_label"] = df_projection["year"].astype(int).astype(str)
+
+    st.subheader("Projected value over time")
+
+    chart_df = df_projection.set_index("year_label")[
+        ["Crowdfunding", "Stocks", "Bonds", "Savings", "Real estate funds"]
+    ]
+    st.line_chart(chart_df)
+
+    st.subheader("Final values after horizon")
+
+    final_row = df_projection.iloc[-1]
+
+    summary_df = pd.DataFrame(
+        {
+            "Asset class": [
+                "Crowdfunding",
+                "Stocks",
+                "Bonds",
+                "Savings",
+                "Real estate funds",
+            ],
+            "Final value (CHF)": [
+                final_row["Crowdfunding"],
+                final_row["Stocks"],
+                final_row["Bonds"],
+                final_row["Savings"],
+                final_row["Real estate funds"],
+            ],
+        }
+    )
+
+    st.table(summary_df.style.format({"Final value (CHF)": "{:,.2f}"}))
+
+
+# A: run both calculators
 show_project_calculator()
-
-
+show_investment_comparison()
