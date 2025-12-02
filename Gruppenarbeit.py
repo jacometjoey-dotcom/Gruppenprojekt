@@ -27,7 +27,7 @@ else:
 
 st.set_page_config(
     #With this the page title and layout are set
-    page_title="Here should be our app title",
+    page_title="Crowdfunding platform",
     layout="wide"
 )
 
