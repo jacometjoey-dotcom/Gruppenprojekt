@@ -368,7 +368,7 @@ st.title(":red[Real Estate Investment Platform]")
 st.divider()
 
 st.header("Real Estate Properties Overview")
-st.warning("Please choose a property to see more details.")
+
 
 st.subheader("Locations of the Properties")
 
