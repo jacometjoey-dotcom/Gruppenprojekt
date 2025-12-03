@@ -464,7 +464,10 @@ for prop in Properties:
                 with tab:
                     #A: again use GitHub raw URL for gallery images
                     img_url = BASE_URL + img_rel.replace(" ", "%20")
-                    st.image(img_url, use_container_width=True)
+                    #created two collums so the pictures fit better 
+                    col1_j,col2_j=st.columns([1,1]) 
+                    with col1_j:
+                        st.image(img_url, use_container_width=True)
 
             st.divider()
 
