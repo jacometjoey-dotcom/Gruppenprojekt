@@ -23,7 +23,7 @@ v_df['total rooms'] = v_df['bedrooms'] + v_df['bathrooms']
 v_df['sqft_living'] = v_df['sqft_living'] * 0.092903
 v_df.rename(columns={'sqft_living' : 'area'}, inplace=True) #renaming sqft_living to area
 
-#adding a swiss multypliert to improve the model performance (I asked Chatgpt to give me and estimated number),
+#adding a swiss multiplier to improve the model performance (I asked Chatgpt to give me and estimated number),
 #maybe ->will change to dataset later (in CHF)
 swiss_pricesqm = 8000.00
 US_pricesqm = 2118.06
@@ -41,7 +41,7 @@ v_df = v_df[v_df['price'] <= price_99] #meaning: removing that 1% that are more 
 
 
 #determine features and target/label
-X = v_df[['area', 'total rooms', 'yr_built', 'yr_renovated', 'condition', 'view']]
+X = v_df[['area', 'total rooms', 'yr_built']]
 Y = v_df['price']
 
 #train/test split with 80% training and 20% testing (test_size = 0.2)
