@@ -11,8 +11,10 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 
 
-#mashine learning model 
-v_df = pd.read_csv(r"C:\Users\sarah\OneDrive - Universitaet St.Gallen\Desktop\data.csv") #dataset from Kapple: https://www.kaggle.com/datasets/zafarali27/house-price-prediction-dataset
+#machine learning model (linear regression)
+v_df = pd.read_csv('data.csv') #dataset from Kapple: https://www.kaggle.com/datasets/zafarali27/house-price-prediction-dataset
+
+#run the code with data from switzerland but the r_2 was worse (https://www.kaggle.com/datasets/etiennekaiser/switzerland-house-price-prediction-data?resource=download)
 
 #create new feature: total number of rooms (bathroom and bedrooms)
 v_df['total rooms'] = v_df['bedrooms'] + v_df['bathrooms']
@@ -28,41 +30,46 @@ US_pricesqm = 2118.06
 
 swiss_factor = swiss_pricesqm / US_pricesqm
 
-
 #convert price from USD to CHF with exchange rate 0.80
-v_df['price'] = v_df['price'] * 0.80 * swiss_factor
+v_df['price'] = v_df['price'] * 0.80
+
+#data cleaning, removing invalid/outlier data points before the ML-model is trained 
+v_df = v_df[v_df['price'] > 0] #removing all houses with a price + number of rooms of zero/negative 
+v_df = v_df[v_df['total rooms'] > 0]
+price_99 = v_df['price'].quantile(0.99) #eliminating all extreme outliers by removing the top 1%
+v_df = v_df[v_df['price'] <= price_99] #meaning: removing that 1% that are more expansive than the other 99%
+
 
 #determine features and target/label
-X = v_df[['area', 'total rooms', 'yr_built']]
+X = v_df[['area', 'total rooms', 'yr_built', 'yr_renovated', 'condition', 'view']]
 Y = v_df['price']
 
 #train/test split with 80% training and 20% testing (test_size = 0.2)
 X_train, X_test, Y_train, Y_test = train_test_split(
-X, Y, test_size=0.2, random_state = 12 #random_state True with random number 12, important for r_squared
+    X, Y, test_size=0.2, random_state = 12 #random_state True with random number 12, important for r_squared
 )
 
 #control, verification that the split has worked wirh [0] for the first value of the tuple
-print(f"Training Set: {X_train.shape[0]} data points")
-print(f"Test Set: {X_test.shape[0]} data points")
-#training set: 3680 data points, test set: 920 data points -> split worked 
-
+#print(f"Training Set: {X_train.shape[0]} data points")
+#print(f"Test Set: {X_test.shape[0]} data points")
+#split worked! --> training set: 3680 data points, test set: 920 data points 
 
 #creating and training the model
 crowdfunding = LinearRegression() #creating an "empty shell" for the future model called crowdfunding
 crowdfunding.fit(X_train, Y_train) #the actual learning process with .fit() with the "empty shell" crowdfunding
 
 #making predicitions on the test set
-Y_pred = crowdfunding.predict(X_test)   #using the now trained model and estimating the price of the test data, the "unkown date" respecteively 
+Y_pred = crowdfunding.predict(X_test) #using the now trained model and estimating the price of the test data, the "unkown date" respecteively 
 
 #evaluating the model performance with r2, rmse and mae
 r2 = r2_score(Y_test, Y_pred) #measuring how well the features explain the variance, from 0-1
 rmse = np.sqrt(mean_squared_error(Y_test, Y_pred)) #standard deviation of the error, measures the average size of the prediction errors, in CHF
 mae = mean_absolute_error(Y_test, Y_pred) #average absollute error, measures the average absolute difference between the prediciton and the actual value, in CHF
 
-#outputs of the results from the model evaluation witg .4f for 4 decimals and .2f for 2 decimals and "CHF" as symbol
-print(f"R² Score: {r2:.4f}") #0.2184 --> very low 
-print(f"RMSE: CHF {rmse:,.2f}") #383,004.01
-print(f"MAE: CHF {mae:,.2f}") #145,840.38
+#print(f"\nR_2 Score: {r2:.4f}") --> 0.4865 okayish, reason: no synthetic data (tried it with more features, but the change was minimal, property prices probably do not have a linear correlation)
+#print(f"RMSE: CHF {rmse:,.2f}") --> still high
+#print(f"MAE: CHF {mae:,.2f}") --> still high
+
 
 
 # A: base dir + helper to resolve paths so images always load correctly
