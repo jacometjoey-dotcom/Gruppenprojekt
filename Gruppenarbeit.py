@@ -6,6 +6,63 @@ import pandas as pd
 import numpy as np
 import pydeck as pdk
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+
+
+
+#mashine learning model 
+v_df = pd.read_csv(r"C:\Users\sarah\OneDrive - Universitaet St.Gallen\Desktop\data.csv") #dataset from Kapple: https://www.kaggle.com/datasets/zafarali27/house-price-prediction-dataset
+
+#create new feature: total number of rooms (bathroom and bedrooms)
+v_df['total rooms'] = v_df['bedrooms'] + v_df['bathrooms']
+
+#calculation of total square metres from square feet to square metres
+v_df['sqft_living'] = v_df['sqft_living'] * 0.092903
+v_df.rename(columns={'sqft_living' : 'area'}, inplace=True) #renaming sqft_living to area
+
+#adding a swiss multypliert to improve the model performance (I asked Chatgpt to give me and estimated number),
+#maybe ->will change to dataset later (in CHF)
+swiss_pricesqm = 8000.00
+US_pricesqm = 2118.06
+
+swiss_factor = swiss_pricesqm / US_pricesqm
+
+
+#convert price from USD to CHF with exchange rate 0.80
+v_df['price'] = v_df['price'] * 0.80 * swiss_factor
+
+#determine features and target/label
+X = v_df[['area', 'total rooms', 'yr_built']]
+Y = v_df['price']
+
+#train/test split with 80% training and 20% testing (test_size = 0.2)
+X_train, X_test, Y_train, Y_test = train_test_split(
+X, Y, test_size=0.2, random_state = 12 #random_state True with random number 12, important for r_squared
+)
+
+#control, verification that the split has worked wirh [0] for the first value of the tuple
+print(f"Training Set: {X_train.shape[0]} data points")
+print(f"Test Set: {X_test.shape[0]} data points")
+#training set: 3680 data points, test set: 920 data points -> split worked 
+
+
+#creating and training the model
+crowdfunding = LinearRegression() #creating an "empty shell" for the future model called crowdfunding
+crowdfunding.fit(X_train, Y_train) #the actual learning process with .fit() with the "empty shell" crowdfunding
+
+#making predicitions on the test set
+Y_pred = crowdfunding.predict(X_test)   #using the now trained model and estimating the price of the test data, the "unkown date" respecteively 
+
+#evaluating the model performance with r2, rmse and mae
+r2 = r2_score(Y_test, Y_pred) #measuring how well the features explain the variance, from 0-1
+rmse = np.sqrt(mean_squared_error(Y_test, Y_pred)) #standard deviation of the error, measures the average size of the prediction errors, in CHF
+mae = mean_absolute_error(Y_test, Y_pred) #average absollute error, measures the average absolute difference between the prediciton and the actual value, in CHF
+
+#outputs of the results from the model evaluation witg .4f for 4 decimals and .2f for 2 decimals and "CHF" as symbol
+print(f"R² Score: {r2:.4f}") #0.2184 --> very low 
+print(f"RMSE: CHF {rmse:,.2f}") #383,004.01
+print(f"MAE: CHF {mae:,.2f}") #145,840.38
 
 
 # A: base dir + helper to resolve paths so images always load correctly
@@ -540,6 +597,40 @@ for prop in Properties:
                     )
             else:
                 st.info("Factsheet PDF not available.")
+
+
+            sqm = int(prop["facts"]["size"].replace("sqm","").strip())
+            rooms = prop["facts"]["rooms"]
+            year_built = prop["facts"]["Building Year"]
+
+            actual_price = int(prop["facts"]["price"]
+                            .replace("fr","") #how is it in the data frame idk
+                            .replace("Fr","")
+                            .replace(".","")
+                            .replace("'","")
+                            .replace("",""))
+            
+            #predict price
+            predicted_price = crowdfunding.predict([[sqm, rooms, year_built]])[0]
+
+            #recommentation ->still need the percentage after (first like this simple)-> can delete ig
+            if predicted_price < actual_price:
+                recommendation = "Model recommends investing"
+            else: 
+                recommendation = "Model does not recommend investing"
+
+#on the webiste (make it pretty green/red and text)
+            st.subheader("Machine Learning Investment Recommendation")
+            st.write(f"Predicted Price: {predicted_price:,.0f}".replace(",","'") + " CHF")
+            st.write(f"Actual Price: {actual_price:,.0f}".replace(",","'") + " CHF")
+
+            percentage_diff = ((predicted_price - actual_price) / actual_price) * 100
+            if percentage_diff < 0:
+                st.success(f"Machine Learning would recommend investing because the property is currently being sold for "
+                          f"{abs(percentage_diff):.2f}% less than its estimated acquisition price.")
+            else: 
+                st.error(f"Machine Learning would NOT recommend investing because the property is currently being sold for "
+                         f"{abs(percentage_diff):.2f}% more than its estimated acquisition price.")
 
 
 # A: HERE WE HAVE THE CALCULATION SECTION FOR THE INVESTMENT CALCULATIONS
