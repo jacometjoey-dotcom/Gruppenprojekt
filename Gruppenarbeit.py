@@ -427,7 +427,7 @@ Properties = [
      }
 ]
 
-logo_path = resolve_path("images/crowdl_logo")
+logo_path = resolve_path("images/crowdl_logo.png")
 
 col_logo, col_title = st.columns([1,4])
 
