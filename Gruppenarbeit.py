@@ -448,6 +448,7 @@ with col_text:
         <h3 style='text-align: center; font-weight: normal; margin-top: 0;'>
             Gemeinsam in Schweizer Immobilien investieren
         </h3>
+    """, unsafe_allow_html=True)
         
 st.divider()
     
