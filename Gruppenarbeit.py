@@ -574,21 +574,7 @@ for prop in Properties:
                 st.write(prop.get("description", ""))
                 st.divider()
 
-            st.divider()
 
-            # Diagram showing investment growth compared to XX over time (dummy data for now)
-            st.subheader("Historical returns of different investment types")
-
-            returns_df = load_returns()
-
-            if returns_df is not None:
-                chart_df = returns_df.set_index("year")
-                st.line_chart(chart_df)
-                st.caption(
-                    "Die Linien zeigen die jährlichen Renditen von Aktien, Obligationen, Sparkonto und Real-Estate-Funds."
-                )
-            else:
-                st.info("No return data available in the database.")
 
             st.divider()
             #open the pdf factsheet and create a download button
