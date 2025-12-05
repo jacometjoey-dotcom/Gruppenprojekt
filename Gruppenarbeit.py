@@ -560,7 +560,7 @@ for prop in Properties:
                     #A: again use GitHub raw URL for gallery images
                     img_url = BASE_URL + img_rel.replace(" ", "%20")
                     #created two collums so the pictures fit better 
-                    col1_j,col2_j=st.columns([1,1]) 
+                    col1_j,col2_j=st.columns([1,2]) 
                     with col1_j:
                         st.image(img_url,width="stretch")
 
