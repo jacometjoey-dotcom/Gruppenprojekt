@@ -569,7 +569,7 @@ for prop in Properties:
 
             with spalte_facts:
                 with st.container (border=True):
-                    st.markdown("###Property Facts")
+                    st.markdown("### Property Facts")
                     col_f1_j, col_f2_j = st.columns(2)
                     with col_f1_j:
                         st.markdown(f"**Price**<br>{prop['facts']['price']}", unsafe_allow_html=True)
