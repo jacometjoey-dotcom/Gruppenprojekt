@@ -570,16 +570,20 @@ for prop in Properties:
             spalte_text_1, spalte_facts = st.columns([2, 1])  # Main content 2/3, Facts box 1/3
 
 
-
+#title for the description 
             with spalte_text_1:
                 st.subheader ("**Description**")
+                #rendering the text in "blocksentence" (HTML essential for "justify")
                 st.markdown(f"<div style='text-align: justify;'>{prop.get('description', '')}</div>", 
                     unsafe_allow_html=True)
-
+#make a container with a seeable border 
             with spalte_facts:
                 with st.container (border=True):
                     st.markdown("### Property Facts")
+                    #make two columns
                     col_f1_j, col_f2_j = st.columns(2)
+
+                    # br for the "Zeilenumbruch"
                     with col_f1_j:
                         st.markdown(f"**Price**<br>{prop['facts']['price']}", unsafe_allow_html=True)
                         st.markdown(f"**Size**<br>{prop['facts']['size']}", unsafe_allow_html=True)
@@ -588,6 +592,8 @@ for prop in Properties:
                         st.markdown(f"**Building Year**<br>{prop['facts']['Building Year']}", unsafe_allow_html=True)
 
                     st.divider()
+
+                    #make the min investment green so it points more out
                     st.success(f"**Min. Investment:**\n\n### {prop['facts']['min_investment']}")
 
 
