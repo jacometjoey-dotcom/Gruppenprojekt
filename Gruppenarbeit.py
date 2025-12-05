@@ -31,7 +31,7 @@ US_pricesqm = 2118.06
 swiss_factor = swiss_pricesqm / US_pricesqm
 
 #convert price from USD to CHF with exchange rate 0.80
-v_df['price'] = v_df['price'] * 0.80
+v_df['price'] = v_df['price'] * 0.80 * swiss_factor
 
 #data cleaning, removing invalid/outlier data points before the ML-model is trained 
 v_df = v_df[v_df['price'] > 0] #removing all houses with a price + number of rooms of zero/negative 
@@ -632,12 +632,12 @@ for prop in Properties:
             st.write(f"Actual Price: {actual_price:,.0f}".replace(",","'") + " CHF")
 
             percentage_diff = ((predicted_price - actual_price) / actual_price) * 100
-            if percentage_diff < 0:
+            if percentage_diff > 0:
                 st.success(f"Machine Learning would recommend investing because the property is currently being sold for "
-                          f"{abs(percentage_diff):.2f}% less than its estimated acquisition price.")
+                          f"{abs(percentage_diff):.2f}% more than its estimated acquisition price.")
             else: 
                 st.error(f"Machine Learning would NOT recommend investing because the property is currently being sold for "
-                         f"{abs(percentage_diff):.2f}% more than its estimated acquisition price.")
+                         f"{abs(percentage_diff):.2f}% less than its estimated acquisition price.")
 
 
 # A: HERE WE HAVE THE CALCULATION SECTION FOR THE INVESTMENT CALCULATIONS
