@@ -429,7 +429,7 @@ Properties = [
 
 logo_path = resolve_path("images/crowdl_logo.png")
 
-col_logo, col_title = st.columns([1,4])
+col_text, col_logo = st.columns([3,1])
 
 with col_logo:
     if os.path.exists(logo_path):
@@ -437,10 +437,10 @@ with col_logo:
     else:
         st.warning("Logo nicht gefunden")
 
-
-with col_title:
-    st.title(":blue[Corwdle]")
-    st.caption("Gemeinsam in Schweizer Immobilien investieren")
+#Help from AI to write a small html code so the title is centred and bigger 
+with col_text:
+    st.markdown("<h1 style='text-align: center; color: #0F52BA; font-size: 4em; margin-bottom: 0;'>Crowdle</h1>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center; font-weight: normal; margin-top: 0;'>Gemeinsam in Schweizer Immobilien investieren</h3>", unsafe_allow_html=True)
 
 st.divider()
     
