@@ -437,11 +437,18 @@ with col_logo:
     else:
         st.warning("Logo nicht gefunden")
 
-#Help from AI to write a small html code so the title is centred and bigger 
+#Help from AI to write a small html code so the title is centred, bigger and pushed down
 with col_text:
-    st.markdown("<h1 style='text-align: center; color: #0F52BA; font-size: 4em; margin-bottom: 0;'>Crowdle</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; font-weight: normal; margin-top: 0;'>Gemeinsam in Schweizer Immobilien investieren</h3>", unsafe_allow_html=True)
-
+    st.markdown("""
+        <h1 style='text-align: center; color: #0F52BA; font-size: 6em; margin-bottom: 0; padding-top: 30px;'>
+            Crowdle
+        </h1>
+    """, unsafe_allow_html=True)
+    st.markdown("""
+        <h3 style='text-align: center; font-weight: normal; margin-top: 0;'>
+            Gemeinsam in Schweizer Immobilien investieren
+        </h3>
+        
 st.divider()
     
 
