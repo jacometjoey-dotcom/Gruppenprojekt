@@ -560,7 +560,31 @@ for prop in Properties:
             # Divided so now we can have the slider/chart layout and the facts box side by side
             spalte_invest, spalte_facts = st.columns([2, 1])  # Main content 2/3, Facts box 1/3
 
-              
+
+            with spalte_facts:
+                with st.container (border=True):
+                    st.marktdown("Property Facts")
+                    col_f1_j, col_f2_j = st.columns(2)
+                    with col_f1_j:
+                        st.markdown(f"**Price**<br>{prop['facts']['price']}", unsafe_allow_html=True)
+                        st.markdown(f"**Size**<br>{prop['facts']['size']}", unsafe_allow_html=True)
+                    with col_f2_j:
+                        st.markdown(f"**Rooms**<br>{prop['facts']['rooms']}", unsafe_allow_html=True)
+                        st.markdown(f"**Building Year**<br>{prop['facts']['Building Year']}", unsafe_allow_html=True)
+
+                    st.divider()
+                    st.success(f"**Min. Investment:**\n\n### {prop['facts']['min_investment']}", unsafe_allow_html = True)
+
+            st.caption("**Description**")
+            st.markdown(f"<div style='text-align: justify;'>{prop.get("description", "")}</div", unsafe_allow_html = True)
+
+            st.divider()
+
+                    
+
+
+
+
 
             with spalte_facts:
                 # Facts box
