@@ -440,7 +440,7 @@ with col_logo:
 #Help from AI to write a small html code so the title is centred, bigger and pushed down
 with col_text:
     st.markdown("""
-        <h1 style='text-align: center; color: #0F52BA; font-size: 6em; margin-bottom: 0; padding-top: 60px;'>
+        <h1 style='text-align: center; color: #0F52BA; font-size: 6em; margin-bottom: 0; padding-top: 120px;'>
             Crowdle
         </h1>
     """, unsafe_allow_html=True)
