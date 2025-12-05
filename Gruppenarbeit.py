@@ -91,7 +91,7 @@ else:
 
 st.set_page_config(
     #With this the page title and layout are set
-    page_title="Crowdfunding platform Test",
+    page_title="Crowdfunding platform",
     layout="wide"
 )
 
