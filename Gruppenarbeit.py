@@ -95,6 +95,15 @@ st.set_page_config(
     layout="wide"
 )
 
+#navigate to the Logo
+logo_path = resolve_path("images/crowdl_logo.png")
+#make an if else statement so it won't crash if it does not find the logo
+if os.path.exists(logo_path):
+    st.logo(logo_path, size="medium")
+
+else:
+    print("Logo nicht gefunden")
+
 #A: The next section is relevant for the Calculation section of the app, here Ivan created a whole lot of functions to cope with python shortcomings regarding number formatting and input validation
 
 # The following helper functions are used to format and validate user inputs and outputs related to money, percentages, and years.
