@@ -427,9 +427,23 @@ Properties = [
      }
 ]
 
+logo_path = resolve_path("images/crowdl_logo")
 
-st.title(":red[Real Estate Investment Platform]")
+col_logo, col_title = st.columns([1,4])
+
+with col_logo:
+    if os.path.exists(logo_path):
+        st.image(logo, use_container_width=True)
+    else:
+        st.warning("Logo nicht gefunden")
+
+
+with col_title:
+    st.title(":blue[Corwdle]")
+    st.caption("Gemeinsam in Schweizer Immobilien investieren")
+
 st.divider()
+    
 
 st.header("Real Estate Properties Overview")
 
