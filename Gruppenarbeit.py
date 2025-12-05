@@ -433,7 +433,7 @@ col_logo, col_title = st.columns([1,4])
 
 with col_logo:
     if os.path.exists(logo_path):
-        st.image(logo, use_container_width=True)
+        st.image(logo_path, use_container_width=True)
     else:
         st.warning("Logo nicht gefunden")
 
