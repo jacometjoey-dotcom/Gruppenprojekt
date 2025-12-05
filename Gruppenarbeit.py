@@ -573,34 +573,13 @@ for prop in Properties:
                         st.markdown(f"**Building Year**<br>{prop['facts']['Building Year']}", unsafe_allow_html=True)
 
                     st.divider()
-                    st.success(f"**Min. Investment:**\n\n### {prop['facts']['min_investment']}", unsafe_allow_html = True)
+                    st.success(f"**Min. Investment:**\n\n### {prop['facts']['min_investment']}")
 
             st.caption("**Description**")
-            st.markdown(f"<div style='text-align: justify;'>{prop.get("description", "")}</div", unsafe_allow_html = True)
+            st.markdown(f"<div style='text-align: justify;'>{prop.get('description', '')}</div", unsafe_allow_html = True)
 
             st.divider()
 
-                    
-
-
-
-
-
-            with spalte_facts:
-                # Facts box
-                st.subheader("Property Facts")
-                st.text(f"Price: {prop['facts']['price']}")
-                st.text(f"Size: {prop['facts']['size']}")
-                st.text(f"Rooms: {prop['facts']['rooms']}")
-                st.text(f"Building Year: {prop['facts']['Building Year']}")
-                st.text(f"Minimum Investment: {prop['facts']['min_investment']}")
-                st.write("**Description**")
-                st.write(prop.get("description", ""))
-                st.divider()
-
-
-
-            st.divider()
             #open the pdf factsheet and create a download button
 
             pdf_path = resolve_path(prop["pdf_factsheet_property"])
