@@ -442,7 +442,7 @@ col_text, col_logo = st.columns([3,1])
 
 with col_logo:
     if os.path.exists(logo_path):
-        st.image(logo_path, use_container_width=True)
+        st.image(logo_path, width="stretch")
     else:
         st.warning("Logo nicht gefunden")
 
@@ -538,7 +538,7 @@ for prop in Properties:
             #A: use the GitHub raw URL also for the main picture
             img_rel = prop["images"][0]
             img_url = BASE_URL + img_rel.replace(" ", "%20")
-            st.image(img_url, use_container_width=True)
+            st.image(img_url, width="stretch")
 
         with spalte_Info:
             # shows the property information while iterating through the properties
@@ -562,7 +562,7 @@ for prop in Properties:
                     #created two collums so the pictures fit better 
                     col1_j,col2_j=st.columns([1,1]) 
                     with col1_j:
-                        st.image(img_url, use_container_width=True)
+                        st.image(img_url,width="stretch")
 
             st.divider()
 
