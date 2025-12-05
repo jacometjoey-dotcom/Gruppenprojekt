@@ -99,7 +99,7 @@ st.set_page_config(
 logo_path = resolve_path("images/crowdl_logo.png")
 #make an if else statement so it won't crash if it does not find the logo
 if os.path.exists(logo_path):
-    st.logo(logo_path, size="medium")
+    st.logo(logo_path, size="large")
 
 else:
     print("Logo nicht gefunden")
