@@ -55,9 +55,7 @@ Y = v_df_clean['SalePrice']
 
 
 #train/split test with 0.8 test and 0.2 for test, random state = 12 for reproducibility
-X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=12
-)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=12)
 
 
 #random forest model 
@@ -70,7 +68,7 @@ rfr = RandomForestRegressor(
     random_state=12, #same random state for reproducibility
 )
 
-
+#fitting
 rfr.fit(X_train, Y_train)
 
 
@@ -85,7 +83,7 @@ mae = mean_absolute_error(Y_test, Y_pred) #average absollute error, measures the
 
 
 #print(f"\nR_2 Score: {r2:.4f}") --> 0.7247 pretty solid for only 3 features 
-#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 34,583 normal for property prices (3 feautes only:location, condition, renovations, etc. are missing in the model)
+#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 34,583 normal for property prices (3 feautes only: location, condition, renovations, etc. are missing in the model)
 #print(f"MAE: CHF {mae:,.2f}") --> 22,123 also pretty solid 
 
 
