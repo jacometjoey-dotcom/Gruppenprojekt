@@ -5,70 +5,90 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pydeck as pdk
-from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 
-
-#machine learning model (linear regression)
-v_df = pd.read_csv('data.csv') #dataset from Kapple: https://www.kaggle.com/datasets/zafarali27/house-price-prediction-dataset
-
-#run the code with data from switzerland but the r_2 was worse (https://www.kaggle.com/datasets/etiennekaiser/switzerland-house-price-prediction-data?resource=download)
-
-#create new feature: total number of rooms (bathroom and bedrooms)
-v_df['total rooms'] = v_df['bedrooms'] + v_df['bathrooms']
-
-#calculation of total square metres from square feet to square metres
-v_df['sqft_living'] = v_df['sqft_living'] * 0.092903
-v_df.rename(columns={'sqft_living' : 'area'}, inplace=True) #renaming sqft_living to area
-
-#adding a swiss multiplier to improve the model performance (I asked Chatgpt to give me and estimated number),
-#maybe ->will change to dataset later (in CHF)
-swiss_pricesqm = 8000.00
-US_pricesqm = 2118.06
-
-swiss_factor = swiss_pricesqm / US_pricesqm
-
-#convert price from USD to CHF with exchange rate 0.80
-v_df['price'] = v_df['price'] * 0.80 * swiss_factor
-
-#data cleaning, removing invalid/outlier data points before the ML-model is trained 
-v_df = v_df[v_df['price'] > 0] #removing all houses with a price + number of rooms of zero/negative 
-v_df = v_df[v_df['total rooms'] > 0]
-price_99 = v_df['price'].quantile(0.99) #eliminating all extreme outliers by removing the top 1%
-v_df = v_df[v_df['price'] <= price_99] #meaning: removing that 1% that are more expansive than the other 99%
+#get data from GitHub, link: https://github.com/1aaronh/ames_housing_prices/blob/master/data/ames.csv
+v_df = pd.read_csv('ames.csv')
 
 
-#determine features and target/label
-X = v_df[['area', 'total rooms', 'yr_built']]
-Y = v_df['price']
+#convert data into correct units 
+v_df['Gr Liv Area'] = v_df['Gr Liv Area'] * 0.092903 #sqft to sqm
+v_df['SalePrice'] = v_df['SalePrice'] * 0.80 #USD to CHF
 
-#train/test split with 80% training and 20% testing (test_size = 0.2)
+
+#data cleaning --> price, area and number of rooms > 0
+v_df = v_df[
+    (v_df['SalePrice'] > 0) & 
+    (v_df['TotRms AbvGrd'] > 0) & 
+    (v_df['Gr Liv Area'] > 0)
+]
+
+
+#removing outliers using the iqr method 
+#video: https://www.youtube.com/watch?v=9jYqZS142mg
+def removing_outliers(v_df, column):
+    Q1 = v_df[column].quantile(0.25)
+    Q3 = v_df[column].quantile(0.75)
+    IQR = Q3 - Q1 #calculating the interquartile (iqr) range (where the middle 50% of the values lie, the dispersion)
+    lower_bound = Q1 - 1.5 * IQR #downard outliers
+    upper_bound = Q3 + 1.5 * IQR #upward outliers 
+    v_df_clean = v_df[(v_df[column] >= lower_bound) & (v_df[column] <= upper_bound)] #keeping the values between the limits, everything else is removed 
+    return v_df_clean 
+
+
+#removing rows with NaN in the used features 
+features_needed = ['Year Built', 'TotRms AbvGrd', 'Gr Liv Area', 'SalePrice']
+v_df_clean = v_df[features_needed].dropna()
+
+
+#removing outliers (not with built year and number of rooms though)
+v_df = removing_outliers(v_df, 'SalePrice')
+v_df = removing_outliers(v_df, 'Gr Liv Area')
+
+
+#defining the features X and target Y
+X = v_df_clean[['Year Built', 'TotRms AbvGrd', 'Gr Liv Area']]
+Y = v_df_clean['SalePrice']
+
+
+#train/split test with 0.8 test and 0.2 for test, random state = 12 for reproducibility
 X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, test_size=0.2, random_state = 12 #random_state True with random number 12, important for r_squared
+    X, Y, test_size=0.2, random_state=12
 )
 
-#control, verification that the split has worked wirh [0] for the first value of the tuple
-#print(f"Training Set: {X_train.shape[0]} data points")
-#print(f"Test Set: {X_test.shape[0]} data points")
-#split worked! --> training set: 3680 data points, test set: 920 data points 
 
-#creating and training the model
-crowdfunding = LinearRegression() #creating an "empty shell" for the future model called crowdfunding
-crowdfunding.fit(X_train, Y_train) #the actual learning process with .fit() with the "empty shell" crowdfunding
+#random forest model 
+rfr = RandomForestRegressor(
+    n_estimators=200, #200 "trees" are trained 
+    max_depth=20, #chose depth 20 so that the model does not over- or underfit
+    min_samples_split=5, #the "trees" should not be too complicated 
+    min_samples_leaf=2,
+    max_features='sqrt', 
+    random_state=12, #same random state for reproducibility
+)
 
-#making predicitions on the test set
-Y_pred = crowdfunding.predict(X_test) #using the now trained model and estimating the price of the test data, the "unkown date" respecteively 
+
+rfr.fit(X_train, Y_train)
+
+
+#prediction
+Y_pred = rfr.predict(X_test)
+
 
 #evaluating the model performance with r2, rmse and mae
 r2 = r2_score(Y_test, Y_pred) #measuring how well the features explain the variance, from 0-1
 rmse = np.sqrt(mean_squared_error(Y_test, Y_pred)) #standard deviation of the error, measures the average size of the prediction errors, in CHF
 mae = mean_absolute_error(Y_test, Y_pred) #average absollute error, measures the average absolute difference between the prediciton and the actual value, in CHF
 
-#print(f"\nR_2 Score: {r2:.4f}") --> 0.4865 okayish, reason: no synthetic data (tried it with more features, but the change was minimal, property prices probably do not have a linear correlation)
-#print(f"RMSE: CHF {rmse:,.2f}") --> still high
-#print(f"MAE: CHF {mae:,.2f}") --> still high
+
+#print(f"\nR_2 Score: {r2:.4f}") --> 0.7247 pretty solid for only 3 features 
+#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 34,583 normal for property prices (3 feautes only:location, condition, renovations, etc. are missing in the model)
+#print(f"MAE: CHF {mae:,.2f}") --> 22,123 also pretty solid 
+
+
 
 
 
