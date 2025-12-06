@@ -60,7 +60,7 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 
 
 #random forest model 
-rfr = RandomForestRegressor(
+crowdfunding = RandomForestRegressor(
     n_estimators=200, #200 "trees" are trained 
     max_depth=20, #chose depth 20 so that the model does not over- or underfit
     min_samples_split=5, #the "trees" should not be too complicated 
@@ -70,11 +70,11 @@ rfr = RandomForestRegressor(
 )
 
 #fitting
-rfr.fit(X_train, Y_train)
+crowdfunding.fit(X_train, Y_train)
 
 
 #prediction
-Y_pred = rfr.predict(X_test)
+Y_pred = crowdfunding.predict(X_test)
 
 
 #evaluating the model performance with r2, rmse and mae
@@ -84,8 +84,8 @@ mae = mean_absolute_error(Y_test, Y_pred) #average absollute error, measures the
 
 
 #print(f"\nR_2 Score: {r2:.4f}") --> 0.7247 pretty solid for only 3 features 
-#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 34,583 normal for property prices (3 feautes only: location, condition, renovations, etc. are missing in the model)
-#print(f"MAE: CHF {mae:,.2f}") --> 22,123 also pretty solid 
+#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 34,583 CHF normal for property prices (3 feautes only: location, condition, renovations, etc. are missing in the model)
+#print(f"MAE: CHF {mae:,.2f}") --> 22,123 CHF also pretty solid 
 
 
 
