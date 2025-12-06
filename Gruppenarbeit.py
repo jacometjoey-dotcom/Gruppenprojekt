@@ -12,8 +12,10 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.linear_model import LinearRegression
 
+#i.a.: i searched for a data set with swiss properties (e.g. from github or kaggle) but they were too small or too synthetic!
+#i also generated histograms for the X and Y data to see how well they were distributed, therefore a log-transformation with the data seemed unnecessary as the data was well distributed 
 
-#get data from GitHub, link: https://github.com/1aaronh/ames_housing_prices/blob/master/data/ames.csv
+#get data from github, link: https://github.com/1aaronh/ames_housing_prices/blob/master/data/ames.csv
 v_df = pd.read_csv('ames.csv')
 
 
@@ -64,7 +66,7 @@ X = v_df_clean[['Year Built', 'TotRms AbvGrd', 'Gr Liv Area']]
 Y = v_df_clean['SalePrice']
 
 
-#train/split test with 0.8 test and 0.2 for test, random state = 12 for reproducibility
+#train/split test with 0.8 train and 0.2 for test, random state = 12 for reproducibility
 X_train, X_test, Y_train, Y_test = train_test_split( X, Y, test_size=0.2, random_state=12)
 
 
@@ -88,9 +90,9 @@ Y_pred = crowdfunding.predict(X_test)
 
 
 #evaluating the model performance with r2, rmse and mae
-r2 = r2_score(Y_test, Y_pred) #measuring how well the features explain the variance, from 0-1
-rmse = np.sqrt(mean_squared_error(Y_test, Y_pred)) #standard deviation of the error, measures the average size of the prediction errors, in CHF
-mae = mean_absolute_error(Y_test, Y_pred) #average absolute error, measures the average absolute difference between the prediciton and the actual value, in CHF
+#r2 = r2_score(Y_test, Y_pred) #measuring how well the features explain the variance, from 0-1
+#rmse = np.sqrt(mean_squared_error(Y_test, Y_pred)) #standard deviation of the error, measures the average size of the prediction errors, in CHF
+#mae = mean_absolute_error(Y_test, Y_pred) #average absolute error, measures the average absolute difference between the prediciton and the actual value, in CHF
 
 
 #print(f"\nR_2 Score: {r2:.4f}") --> 0.7430 pretty solid for only 3 features 
