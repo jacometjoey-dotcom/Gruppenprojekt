@@ -4,6 +4,8 @@ import sqlite3
 import streamlit as st
 import pandas as pd
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 import pydeck as pdk
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
@@ -13,6 +15,13 @@ from sklearn.linear_model import LinearRegression
 
 #get data from GitHub, link: https://github.com/1aaronh/ames_housing_prices/blob/master/data/ames.csv
 v_df = pd.read_csv('ames.csv')
+
+
+#creating a heat map to see which features correlate most with the price 
+#plt.figure(figsize=(30, 18))
+#sns.heatmap(v_df.select_dtypes(include=[np.number]).corr(), annot=True)
+#plt.show()
+#print(v_df)
 
 
 #convert data into correct units 
@@ -46,8 +55,8 @@ v_df_clean = v_df[features_needed].dropna()
 
 
 #removing outliers (not with built year and number of rooms though)
-v_df = removing_outliers(v_df, 'SalePrice')
-v_df = removing_outliers(v_df, 'Gr Liv Area')
+v_df_clean = removing_outliers(v_df, 'SalePrice')
+v_df_clean = removing_outliers(v_df, 'Gr Liv Area')
 
 
 #defining the features X and target Y
@@ -56,7 +65,12 @@ Y = v_df_clean['SalePrice']
 
 
 #train/split test with 0.8 test and 0.2 for test, random state = 12 for reproducibility
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=12)
+X_train, X_test, Y_train, Y_test = train_test_split( X, Y, test_size=0.2, random_state=12)
+
+
+#log transformation for better performance (better gaussian distribution of the values)
+Y_train_log = np.log(Y_train)
+Y_test_log = np.log(Y_test)
 
 
 #random forest model 
@@ -69,12 +83,13 @@ crowdfunding = RandomForestRegressor(
     random_state=12, #same random state for reproducibility
 )
 
-#fitting
+#fitting the model 
 crowdfunding.fit(X_train, Y_train)
 
 
 #prediction
 Y_pred = crowdfunding.predict(X_test)
+
 
 
 #evaluating the model performance with r2, rmse and mae
@@ -83,9 +98,9 @@ rmse = np.sqrt(mean_squared_error(Y_test, Y_pred)) #standard deviation of the er
 mae = mean_absolute_error(Y_test, Y_pred) #average absollute error, measures the average absolute difference between the prediciton and the actual value, in CHF
 
 
-#print(f"\nR_2 Score: {r2:.4f}") --> 0.7247 pretty solid for only 3 features 
-#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 34,583 CHF normal for property prices (3 feautes only: location, condition, renovations, etc. are missing in the model)
-#print(f"MAE: CHF {mae:,.2f}") --> 22,123 CHF also pretty solid 
+#print(f"\nR_2 Score: {r2:.4f}") --> 0.7430 pretty solid for only 3 features 
+#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 30,849.39 CHF normal for property prices (3 feautes only: location, condition, renovations, etc. are missing in the model)
+#print(f"MAE: CHF {mae:,.2f}") --> 21,141.15 CHF also pretty solid 
 
 
 
