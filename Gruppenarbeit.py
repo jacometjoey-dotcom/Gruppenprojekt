@@ -13,6 +13,7 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.linear_model import LinearRegression
 
 #i.a.: i searched for a data set with swiss properties (e.g. from github or kaggle) but they were too small or too synthetic!
+#at first i chose a linear regression, but the metrics were too low (sth. with 25% r squared) so i chose the random forest model for better performance 
 #i also generated histograms for the X and Y data to see how well they were distributed, therefore a log-transformation with the data seemed unnecessary as the data was well distributed 
 
 #get data from github, link: https://github.com/1aaronh/ames_housing_prices/blob/master/data/ames.csv
