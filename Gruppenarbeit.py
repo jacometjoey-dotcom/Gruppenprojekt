@@ -645,7 +645,7 @@ for prop in Properties:
                             .replace("",""))
             
             #predict price
-            predicted_price = rfr.predict([[sqm, rooms, year_built]])[0]
+            predicted_price = crowdfunding.predict([[sqm, rooms, year_built]])[0]
 
             #recommentation ->still need the percentage after (first like this simple)-> can delete ig
             if predicted_price < actual_price:
