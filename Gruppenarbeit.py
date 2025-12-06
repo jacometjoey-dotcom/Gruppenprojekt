@@ -8,6 +8,7 @@ import pydeck as pdk
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from sklearn.linear_model import LinearRegression
 
 
 #get data from GitHub, link: https://github.com/1aaronh/ames_housing_prices/blob/master/data/ames.csv
@@ -644,7 +645,7 @@ for prop in Properties:
                             .replace("",""))
             
             #predict price
-            predicted_price = crowdfunding.predict([[sqm, rooms, year_built]])[0]
+            predicted_price = rfr.predict([[sqm, rooms, year_built]])[0]
 
             #recommentation ->still need the percentage after (first like this simple)-> can delete ig
             if predicted_price < actual_price:
