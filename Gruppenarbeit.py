@@ -68,11 +68,6 @@ Y = v_df_clean['SalePrice']
 X_train, X_test, Y_train, Y_test = train_test_split( X, Y, test_size=0.2, random_state=12)
 
 
-#log transformation for better performance (better gaussian distribution of the values)
-Y_train_log = np.log(Y_train)
-Y_test_log = np.log(Y_test)
-
-
 #random forest model 
 crowdfunding = RandomForestRegressor(
     n_estimators=200, #200 "trees" are trained 
@@ -95,11 +90,11 @@ Y_pred = crowdfunding.predict(X_test)
 #evaluating the model performance with r2, rmse and mae
 r2 = r2_score(Y_test, Y_pred) #measuring how well the features explain the variance, from 0-1
 rmse = np.sqrt(mean_squared_error(Y_test, Y_pred)) #standard deviation of the error, measures the average size of the prediction errors, in CHF
-mae = mean_absolute_error(Y_test, Y_pred) #average absollute error, measures the average absolute difference between the prediciton and the actual value, in CHF
+mae = mean_absolute_error(Y_test, Y_pred) #average absolute error, measures the average absolute difference between the prediciton and the actual value, in CHF
 
 
 #print(f"\nR_2 Score: {r2:.4f}") --> 0.7430 pretty solid for only 3 features 
-#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 30,849.39 CHF normal for property prices (3 feautes only: location, condition, renovations, etc. are missing in the model)
+#print(f"RMSE: CHF {rmse:,.2f}") --> -/+ 30,849.39 CHF normal for property prices (3 features only: location, condition, renovations, etc. are missing in the model)
 #print(f"MAE: CHF {mae:,.2f}") --> 21,141.15 CHF also pretty solid 
 
 
