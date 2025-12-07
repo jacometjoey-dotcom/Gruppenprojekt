@@ -570,7 +570,7 @@ for prop in Properties:
             #A: use the GitHub raw URL also for the main picture
             img_rel = prop["images"][0]
             img_url = BASE_URL + img_rel.replace(" ", "%20")
-            st.image(img_url, width="stretch")
+            st.image(img_url, use_container_width=True)
 
         with spalte_Info:
             # shows the property information while iterating through the properties
@@ -594,7 +594,7 @@ for prop in Properties:
                     #created two collums so the pictures fit better 
                     col1_j,col2_j=st.columns([1,2]) 
                     with col1_j:
-                        st.image(img_url,width="stretch")
+                        st.image(img_url,use_container_width=True)
 
             st.divider()
 
@@ -678,6 +678,56 @@ for prop in Properties:
             else: 
                 st.error(f"Machine Learning would NOT recommend investing because the property is currently being sold for "
                          f"{abs(percentage_diff):.2f}% less than its estimated acquisition price.")
+
+
+            #Scatterplot: Living area vs sale price (Training data + selected property)
+
+            st.subheader("Market Positioning: Living area vs. sale price")
+
+            # here extracting the property features
+            sqm = int(prop["facts"]["size"].replace("sqm","").strip())
+            rooms = prop["facts"]["rooms"]
+            year_built = prop["facts"]["Building Year"]
+
+            # This is the clean actual price now 
+            actual_price = int(
+                prop["facts"]["price"]
+                    .replace("Fr.","")
+                    .replace("fr","")
+                    .replace("'","")
+                    .replace(" ","")
+            )       
+
+            # Creating the figure 
+            fig, ax = plt.subplots(figsize=(10,6))
+
+            # Plotting the training dataset 
+            ax.scatter(
+                v_df_clean["Gr Liv Area"],
+                v_df_clean["SalePrice"],
+                alpha=0.35,
+                label="Training dataset"
+            )
+
+            # adding the plot for the selected property using a red dot
+            ax.scatter(
+                sqm,
+                actual_price,
+                color="red",
+                s=140,
+                label="Selected property"
+            )
+
+            # adding title and labels
+            ax.set_title("Where does this property lie compared to the market?")
+            ax.set_xlabel("Living area (sqm)")
+            ax.set_ylabel("Sale price (CHF)")
+            ax.legend()
+
+            # running it on Streamlit
+            st.pyplot(fig)
+
+
 
 
 # A: HERE WE HAVE THE CALCULATION SECTION FOR THE INVESTMENT CALCULATIONS
@@ -1010,6 +1060,6 @@ def show_investment_comparison():
     st.table(summary_df.style.format({"Final value (CHF)": "{:,.2f}"}))
 
 
-# A: run both calculators
+# A: run the calculator
 show_project_calculator()
-show_investment_comparison()
+
