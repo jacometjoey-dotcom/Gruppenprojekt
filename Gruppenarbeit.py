@@ -353,7 +353,7 @@ Properties = [
          "images/Prop3_I2.png"
      ],
      "facts": {
-         "price": "Fr. 1'600'000",
+         "price": "Fr. 3'100'000",
          "size": "230 sqm",
          "rooms": 8,
          "Building Year": 2010,
