@@ -622,7 +622,7 @@ for prop in Properties:
             )       
 
             # Creating the figure 
-            fig, ax = plt.subplots(figsize=(10,6))
+            fig, ax = plt.subplots(figsize=(6,4))
 
             # Plotting the training dataset 
             ax.scatter(
