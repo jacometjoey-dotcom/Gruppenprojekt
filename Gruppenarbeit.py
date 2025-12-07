@@ -34,7 +34,7 @@ v_df = pd.read_csv('ames.csv')
 #Facotr 1: Location & Land Factor, difference in median price per square meter (Iowa 1'800 vs zurich 8500) 
 factor_location_land = 4.8 
 
-#Factor 2: The Construction Quality (Material and Human resources cost)
+#Factor 2: The Construction Quality (Material and labor cost)
 #construction method in USA "stick build" vs switzerland solid construction --> prox 60% more expensive 
 factor_construction_quality = 1.6 
 
