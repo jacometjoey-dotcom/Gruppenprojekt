@@ -296,9 +296,9 @@ Properties = [
      ],
      "facts": {
          "price": "Fr. 1'450'000",
-         "size": "120 sqm",
-         "rooms": 3,
-         "Building Year": 1910,
+         "size": "150 sqm",
+         "rooms": 7,
+         "Building Year": 1980,
          "min_investment": "Fr. 30'000"
      },
      "pdf_factsheet_property": "factsheet/Factsheet1.pdf"
@@ -339,7 +339,7 @@ Properties = [
          "images/Prop3_I2.png"
      ],
      "facts": {
-         "price": "Fr. 2'600'000",
+         "price": "Fr. 1'600'000",
          "size": "230 sqm",
          "rooms": 8,
          "Building Year": 2010,
@@ -361,9 +361,9 @@ Properties = [
             "images/Prop4_I2.png"
         ],
         "facts": {
-            "price": "Fr. 4'600'000",
+            "price": "Fr. 2'600'000",
             "size": "200 sqm",
-            "rooms": 4.5,
+            "rooms": 7,
             "Building Year": 2020,
             "min_investment": "Fr. 230'000"
         },
@@ -381,10 +381,10 @@ Properties = [
                 "images/ChatGPT Image Nov 9, 2025 at 05_15_45 PM.png"
                 ],
      "facts": {
-         "price": "Fr. 5'750'000",
+         "price": "Fr. 2'250'000",
          "size": "150 sqm",
-         "rooms": 4,
-         "Building Year": 2015,
+         "rooms": 12,
+         "Building Year": 2020,
          "min_investment": "Fr. 76'000"
      },
      "pdf_factsheet_property": "factsheet/Factsheet2.pdf"
