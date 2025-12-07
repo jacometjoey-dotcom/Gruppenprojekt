@@ -27,9 +27,23 @@ v_df = pd.read_csv('ames.csv')
 #print(v_df)
 
 
+
+#added a multiplyer so the calculations are more accurate 
+
+
+#Facotr 1: Location & Land Factor, difference in median price per square meter (Iowa 1'800 vs zurich 8500) 
+factor_location_land = 4.8 
+
+#Factor 2: The Construction Quality (Material and Human resources cost)
+#construction method in USA "stick build" vs switzerland solid construction --> prox 60% more expensive 
+factor_construction_quality = 1.6 
+
+swiss_adjustment_factor = factor_location_land * factor_construction_quality
+
+
 #convert data into correct units 
 v_df['Gr Liv Area'] = v_df['Gr Liv Area'] * 0.092903 #sqft to sqm
-v_df['SalePrice'] = v_df['SalePrice'] * 0.80 #USD to CHF
+v_df['SalePrice'] = v_df['SalePrice'] * swiss_adjustment_factor 
 
 
 #data cleaning --> price, area and number of rooms > 0
@@ -429,20 +443,6 @@ map_data = pd.DataFrame(
         "name": prop["title"]
     } for prop in Properties]
 )
-
-
-#added a multiplyer so the calculations are more accurate 
-
-
-#Facotr 1: Location & Land Factor, difference in median price per square meter (Iowa 1'800 vs zurich 8500) 
-factor_location_land = 4.8 
-
-#Factor 2: The Construction Quality (Material and Human resources cost)
-#construction method in USA "stick build" vs switzerland solid construction --> prox 60% more expensive 
-factor_construction_quality = 1.6 
-
-swiss_adjustment_factor = factor_location_land * factor_construction_quality
-
 
 
 #A: here i built a tooltip to show the property name and image when hovering over the dots on the map, so that a user can see more information about the property
