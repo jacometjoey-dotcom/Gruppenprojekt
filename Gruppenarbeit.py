@@ -607,48 +607,53 @@ for prop in Properties:
 
             st.subheader("Market Positioning: Living area vs. sale price")
 
-            # here extracting the property features
-            sqm = int(prop["facts"]["size"].replace("sqm","").strip())
-            rooms = prop["facts"]["rooms"]
-            year_built = prop["facts"]["Building Year"]
 
-            # This is the clean actual price now 
-            actual_price = int(
-                prop["facts"]["price"]
-                    .replace("Fr.","")
-                    .replace("fr","")
-                    .replace("'","")
-                    .replace(" ","")
-            )       
+            col_left_J, col_center_j, col_right_j = st.columns([1,2,1])
 
-            # Creating the figure 
-            fig, ax = plt.subplots(figsize=(6,4))
+            with col_center_j:
 
-            # Plotting the training dataset 
-            ax.scatter(
-                v_df_clean["Gr Liv Area"],
-                v_df_clean["SalePrice"],
-                alpha=0.35,
-                label="Training dataset"
-            )
+                # here extracting the property features
+                sqm = int(prop["facts"]["size"].replace("sqm","").strip())
+                rooms = prop["facts"]["rooms"]
+                year_built = prop["facts"]["Building Year"]
 
-            # adding the plot for the selected property using a red dot
-            ax.scatter(
-                sqm,
-                actual_price,
-                color="red",
-                s=140,
-                label="Selected property"
-            )
+                # This is the clean actual price now 
+                actual_price = int(
+                    prop["facts"]["price"]
+                        .replace("Fr.","")
+                        .replace("fr","")
+                        .replace("'","")
+                        .replace(" ","")
+                )       
 
-            # adding title and labels
-            ax.set_title("Where does this property lie compared to the market?")
-            ax.set_xlabel("Living area (sqm)")
-            ax.set_ylabel("Sale price (CHF)")
-            ax.legend()
+                # Creating the figure 
+                fig, ax = plt.subplots(figsize=(10,6))
 
-            # running it on Streamlit
-            st.pyplot(fig)
+                # Plotting the training dataset 
+                ax.scatter(
+                    v_df_clean["Gr Liv Area"],
+                    v_df_clean["SalePrice"],
+                    alpha=0.35,
+                    label="Training dataset"
+                )
+
+                # adding the plot for the selected property using a red dot
+                ax.scatter(
+                    sqm,
+                    actual_price,
+                    color="red",
+                    s=140,
+                    label="Selected property"
+                )
+
+                # adding title and labels
+                ax.set_title("Where does this property lie compared to the market?")
+                ax.set_xlabel("Living area (sqm)")
+                ax.set_ylabel("Sale price (CHF)")
+                ax.legend()
+
+                # running it on Streamlit
+                st.pyplot(fig)
 
 
 
