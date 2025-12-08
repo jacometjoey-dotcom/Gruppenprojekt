@@ -583,7 +583,7 @@ for prop in Properties:
             else:
                 st.info("Factsheet PDF not available.")
 
-
+#ml part 
             sqm = int(prop["facts"]["size"].replace("sqm","").strip())
             rooms = prop["facts"]["rooms"]
             year_built = prop["facts"]["Building Year"]
@@ -595,7 +595,7 @@ for prop in Properties:
                             .replace("'","")
                             .replace("",""))
             
-            #predict price
+#predict price
             predicted_price = crowdfunding.predict([[year_built, rooms, sqm]])[0]
 
             #recommentation ->still need the percentage after (first like this simple)-> can delete ig
@@ -609,13 +609,13 @@ for prop in Properties:
             st.write(f"Predicted Price: {predicted_price:,.0f}".replace(",","'") + " CHF")
             st.write(f"Actual Price: {actual_price:,.0f}".replace(",","'") + " CHF")
 
-            percentage_diff = ((predicted_price - actual_price) / actual_price) * 100
+            percentage_diff = ((predicted_price - actual_price) / actual_price) * 100 #S: calculating percents
             if percentage_diff > 0:
-                st.success(f"Machine Learning would recommend investing because the property is currently being sold for "
-                          f"{abs(percentage_diff):.2f}% more than its estimated acquisition price.")
+                st.success(f"Machine Learning would recommend investing because the property is currently being sold for "  
+                          f"{abs(percentage_diff):.2f}% less than its estimated acquisition price.")
             else: 
                 st.error(f"Machine Learning would NOT recommend investing because the property is currently being sold for "
-                         f"{abs(percentage_diff):.2f}% less than its estimated acquisition price.")
+                         f"{abs(percentage_diff):.2f}% more than its estimated acquisition price.")
 
 
             #Scatterplot: Living area vs sale price (Training data + selected property)
