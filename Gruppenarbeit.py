@@ -1,6 +1,6 @@
 import os
 import sqlite3
-
+import matplotlib.ticker as ticker
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -660,11 +660,14 @@ for prop in Properties:
                     s=140,
                     label="Selected property"
                 )
+                #formatting Y-axis to millions
+
+                ax..yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x/1_000_000:.1f} Mio.'))
 
                 # adding title and labels
                 ax.set_title("Where does this property lie compared to the market?")
                 ax.set_xlabel("Living area (sqm)")
-                ax.set_ylabel("Sale price (CHF)")
+                ax.set_ylabel("Sale price (CHF in Mio)")
                 ax.legend()
 
                 # running it on Streamlit
