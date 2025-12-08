@@ -662,7 +662,7 @@ for prop in Properties:
                 )
                 #formatting Y-axis to millions
 
-                ax..yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x/1_000_000:.1f} Mio.'))
+                ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x/1_000_000:.1f} Mio.'))
 
                 # adding title and labels
                 ax.set_title("Where does this property lie compared to the market?")
