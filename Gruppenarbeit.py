@@ -149,6 +149,8 @@ st.set_page_config(
 
 #navigate to the Logo
 logo_path = resolve_path("images/crowdl_logo.png")
+
+#here we made the small logo which will always stay at the top left corner
 #make an if else statement so it won't crash if it does not find the logo
 if os.path.exists(logo_path):
     st.logo(logo_path, size="large")
@@ -161,11 +163,10 @@ else:
 #Properties are imported from propertydata.py , and the different functionalities are built below (map. etc)
 #second we have the CALCULATION SECTION, for the investment calculations
 
-
-logo_path = resolve_path("images/crowdl_logo.png")
-
+#Here we add the big logo at the beginning of the website 
+#Two collumns so the logo will just be on the left corner, and make thecolumns with the picture 1/4 
 col_text, col_logo = st.columns([3,1])
-
+#if else so it does not crash if the logo is not found, and when it is found stretch it so it fills the whole column on the right 
 with col_logo:
     if os.path.exists(logo_path):
         st.image(logo_path, width="stretch")
