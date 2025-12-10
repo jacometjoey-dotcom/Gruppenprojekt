@@ -47,9 +47,7 @@ v_df = pd.read_csv('ames.csv')
 #print(v_df)
 
 
-
 #added a multiplyer so the calculations are more accurate 
-
 
 #Facotr 1: Location & Land Factor, difference in median price per square meter (Iowa 1'800 vs zurich 8500) 
 factor_location_land = 4.8 
@@ -160,7 +158,7 @@ else:
 
 
 #THE OVERALL CODE STRUCTURE IS THE FOLLOWING:
-#first we have the properties section with every property data stored in a list of dictionaries, and the different functionalities are built below (map. etc)
+#Properties are imported from propertydata.py , and the different functionalities are built below (map. etc)
 #second we have the CALCULATION SECTION, for the investment calculations
 
 
