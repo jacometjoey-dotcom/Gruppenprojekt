@@ -1,5 +1,4 @@
 import os
-import sqlite3
 import matplotlib.ticker as ticker
 import streamlit as st
 import pandas as pd
@@ -10,7 +9,28 @@ import pydeck as pdk
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-from sklearn.linear_model import LinearRegression
+
+#getting all the property data from seperate code (so code is shorter/more structured)
+from propertydata import Properties
+
+#same purpose move some definitions in other code
+from definitions import (
+    removing_outliers,
+    format_thousands_ch,
+    show_money,
+    show_percent,
+    show_years,
+    strip_common_bits,
+    check_number_input,
+    check_years_input,
+    check_percent_input,
+    check_crowdfunder_count,
+    touchup_money_key,
+    touchup_percent_key,
+    touchup_years_key,
+    show_readonly,
+    show_highlight_green
+)
 
 #i.a.: i searched for a data set with swiss properties (e.g. from github or kaggle) but they were too small or too synthetic!
 #at first i chose a linear regression, but the metrics were too low (sth. with 25% r squared) so i chose the random forest model for better performance 
@@ -52,18 +72,6 @@ v_df = v_df[
     (v_df['TotRms AbvGrd'] > 0) & 
     (v_df['Gr Liv Area'] > 0)
 ]
-
-
-#removing outliers using the iqr method 
-#video: https://www.youtube.com/watch?v=9jYqZS142mg
-def removing_outliers(v_df, column):
-    Q1 = v_df[column].quantile(0.25)
-    Q3 = v_df[column].quantile(0.75)
-    IQR = Q3 - Q1 #calculating the interquartile (iqr) range (where the middle 50% of the values lie, the dispersion)
-    lower_bound = Q1 - 1.5 * IQR #downard outliers
-    upper_bound = Q3 + 1.5 * IQR #upward outliers 
-    v_df_clean = v_df[(v_df[column] >= lower_bound) & (v_df[column] <= upper_bound)] #keeping the values between the limits, everything else is removed 
-    return v_df_clean 
 
 
 #removing rows with NaN in the used features 
@@ -150,260 +158,11 @@ if os.path.exists(logo_path):
 else:
     print("Logo nicht gefunden")
 
-#A: The next section is relevant for the Calculation section of the app, here Ivan created a whole lot of functions to cope with python shortcomings regarding number formatting and input validation
-
-# The following helper functions are used to format and validate user inputs and outputs related to money, percentages, and years.
-
-def format_thousands_ch(num: float, decimals: int = 0) -> str:
-    s = f"{num:,.{decimals}f}"
-    s = s.replace(",", "_").replace(".", ",").replace("_", "’")
-    if decimals == 0:
-        s = s.split(",")[0]
-    return s
-
-
-def show_money(n: float | None) -> str:
-    if n is None:
-        return ""
-    return f"{format_thousands_ch(n, 0)} CHF"
-
-
-def show_percent(ratio: float | None) -> str:
-    if ratio is None:
-        return ""
-    return f"{ratio*100:.2f}%"
-
-
-def show_years(y: float | None) -> str:
-    if y is None:
-        return ""
-    return f"{y:.2f} years"
-
-
-def strip_common_bits(text: str) -> str:
-    s = str(text or "").strip()
-    s = s.replace(" ", "").replace("’", "").replace("'", "")
-    s = s.replace("CHF", "").replace("chf", "")
-    s = s.replace("YEARS", "").replace("years", "").replace("Year", "").replace("year", "")
-    s = s.replace("%", "")
-    return s
-
-
-def check_number_input(label: str, text: str):
-    if text is None or str(text).strip() == "":
-        return None, f"{label}: is required and must be a number."
-    s = strip_common_bits(text)
-    s = s.replace(",", "")
-    try:
-        return float(s), None
-    except ValueError:
-        return None, f"{label}: must be a valid number (e.g., 3’700’000 or 3700000)."
-
-
-def check_years_input(label: str, text: str):
-    if text is None or str(text).strip() == "":
-        return None, f"{label}: is required and must be a positive number."
-    s = strip_common_bits(text)
-    if "," in s and "." not in s:
-        s = s.replace(",", ".")
-    else:
-        s = s.replace(",", "")
-    try:
-        val = float(s)
-    except ValueError:
-        return None, f"{label}: must be a valid number (e.g., 1.50)."
-    if val <= 0:
-        return None, f"{label}: must be greater than 0."
-    return val, None
-
-
-def check_percent_input(label: str, text: str):
-    if text is None or str(text).strip() == "":
-        return None, f"{label}: is required and must be a percentage."
-    s = strip_common_bits(text)
-    if "," in s and "." not in s:
-        s = s.replace(",", ".")
-    s = s.replace(",", "")
-    try:
-        val = float(s)
-    except ValueError:
-        return None, f"{label}: must be a valid percentage (e.g., 6.25 or 6.25%)."
-    ratio = val if val <= 1 else val / 100.0
-    if ratio < 0:
-        return None, f"{label}: cannot be negative."
-    if ratio > 1:
-        return None, f"{label}: cannot exceed 100%."
-    return ratio, None
-
-
-def check_crowdfunder_count(label: str, text: str):
-    if text is None or str(text).strip() == "":
-        return None, f"{label}: is required and must be a whole number from 1 to 19."
-    s = strip_common_bits(text)
-    if "." in s or "," in s:
-        return None, f"{label}: must be an integer (no decimals)."
-    if not s.isdigit():
-        return None, f"{label}: must be an integer (e.g., 7)."
-    val = int(s)
-    if not (1 <= val <= 19):
-        return None, f"{label}: must be between 1 and 19."
-    return val, None
-
-
-def touchup_money_key(key: str):
-    raw = st.session_state.get(key, "")
-    if raw is None or str(raw).strip() == "":
-        return
-    val, err = check_number_input("", raw)
-    if err is None:
-        st.session_state[key] = show_money(val)
-
-
-def touchup_percent_key(key: str):
-    raw = st.session_state.get(key, "")
-    if raw is None or str(raw).strip() == "":
-        return
-    ratio, err = check_percent_input("", raw)
-    if err is None:
-        st.session_state[key] = show_percent(ratio)
-
-
-def touchup_years_key(key: str):
-    raw = st.session_state.get(key, "")
-    if raw is None or str(raw).strip() == "":
-        return
-    years_val, err = check_years_input("", raw)
-    if err is None:
-        st.session_state[key] = show_years(years_val)
-
-
-def show_readonly(label: str, value: str):
-    if value:
-        st.text_input(label, value=value, disabled=True)
-
-
-def show_highlight_green(label: str, value: str):
-    if value:
-        st.success(f"{label}: {value}")
-
 
 #THE OVERALL CODE STRUCTURE IS THE FOLLOWING:
 #first we have the properties section with every property data stored in a list of dictionaries, and the different functionalities are built below (map. etc)
 #second we have the CALCULATION SECTION, for the investment calculations
 
-
-# A: HERE IS THE CODE SECTION OF THE PROPERTIES DATA
-
-Properties = [
-    #Here are the property data stored in a list of dictionaries
-    {"id": 1,
-     "name": "Property 1",
-     "title": "Stylish 6 Apartment old-building in the city center",
-     "locations_name": "Zurich, Aussershil",
-     "lat": 47.3776,
-     "lon": 8.5268,
-     "description": "This stylish old-building apartment is located in the heart of Zurich's Aussershil district. Featuring six spacious apartments, this property combines classic architecture with modern amenities, offering a unique living experience in one of the city's most vibrant neighborhoods.",
-     "images": [
-         "images/Prop1_A1.png",
-         "images/Prop1_I1.png",
-         "images/Prop1_I2.png"
-     ],
-     "facts": {
-         "price": "Fr. 1'450'000",
-         "size": "150 sqm",
-         "rooms": 7,
-         "Building Year": 1980,
-         "min_investment": "Fr. 30'000"
-     },
-     "pdf_factsheet_property": "factsheet/Factsheet1.pdf"
-     },
-
-    {"id": 2,
-     "name": "Property 2",
-     "title": "Modern penthouse with city and LAKE view",
-     "locations_name": "Luzern, Tribschen",
-     "lat": 47.0502,
-     "lon": 8.3064,
-     "description": "Contemporary penthouse located in the Tribschen area of Luzern, offering stunning city and lake views. This modern residence features open-concept living spaces, high-end finishes, and a private terrace, perfect for enjoying the picturesque surroundings and vibrant city life.",
-     "images": [
-         "images/Prop2_A1.png",
-         "images/Prop2_I1.png",
-         "images/Prop2_I2.png"
-     ],
-
-     "facts": {
-         "price": "Fr. 1'750'000",
-         "size": "150 sqm",
-         "rooms": 4,
-         "Building Year": 2015,
-         "min_investment": "Fr. 45'000"
-     },
-     "pdf_factsheet_property": "factsheet/Factsheet2.pdf"
-     },
-    {"id": 3,
-     "name": "Property 3",
-     "title": "Family Townhouse with big garden and BBQ area",
-     "locations_name": "Oerlikon",
-     "lat": 47.4144,
-     "lon": 8.5281,
-     "description": "Spacious family townhouse located in the Oerlikon district, featuring a large garden and BBQ area. This property offers ample living space, modern amenities, and a perfect setting for family gatherings and outdoor activities.",
-     "images": [
-         "images/Prop3_A1.png",
-         "images/Prop3_I1.png",
-         "images/Prop3_I2.png"
-     ],
-     "facts": {
-         "price": "Fr. 3'100'000",
-         "size": "230 sqm",
-         "rooms": 8,
-         "Building Year": 2010,
-         "min_investment": "Fr. 60'000"
-     },
-     "pdf_factsheet_property": "factsheet/Factsheet3.pdf"
-     },
-    {
-        "id": 4,
-        "name": "Property 4",
-        "title": "Historical Townhouse in the heart of the city",
-        "locations_name": "St.Gallen, Museumsquartier",
-        "lat": 47.423821,
-        "lon": 9.376152,
-        "description": "Charming historical townhouse located in the Museumsquartier of St.Gallen. This beautifully preserved property features classic architecture, spacious interiors, and a rich history, offering a unique living experience in the heart of the city.",
-        "images": [
-            "images/Prop4_A1.png",
-            "images/Prop4_I1.png",
-            "images/Prop4_I2.png"
-        ],
-        "facts": {
-            "price": "Fr. 2'600'000",
-            "size": "200 sqm",
-            "rooms": 7,
-            "Building Year": 2020,
-            "min_investment": "Fr. 230'000"
-        },
-        "pdf_factsheet_property": "factsheet/Factsheet4.pdf"
-    },
-    {"id": 5,
-     "name": "Property 5",
-     "title": "Penthouse by the lake Lugano, a twist of amazing view and modern design",
-     "locations_name": "Paradiso, Lugano",
-     "lat": 46.0037,
-     "lon": 8.9556,
-     "description": "Luxury penthouse offering panoramic lake views, modern architecture, and premium amenities in Paradiso, Lugano. This exclusive residence features spacious rooms, private terrace, and top-tier finishes, ideal for sophisticated urban living.",
-     "images": ["images/ChatGPT Image Nov 9, 2025 at 05_15_42 PM.png",
-                "images/ChatGPT Image Nov 9, 2025 at 05_15_44 PM.png",
-                "images/ChatGPT Image Nov 9, 2025 at 05_15_45 PM.png"
-                ],
-     "facts": {
-         "price": "Fr. 2'250'000",
-         "size": "150 sqm",
-         "rooms": 12,
-         "Building Year": 2020,
-         "min_investment": "Fr. 76'000"
-     },
-     "pdf_factsheet_property": "factsheet/Factsheet2.pdf"
-     }
-]
 
 logo_path = resolve_path("images/crowdl_logo.png")
 
