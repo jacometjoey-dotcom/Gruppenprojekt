@@ -1,4 +1,6 @@
-#Crowdle 🏠
+# Crowdle 🏠
+
+Click the link to open the website in your browser
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gruppenprojekt-uy34qhoxjjxg5kfzxfxubw.streamlit.app/)
 
