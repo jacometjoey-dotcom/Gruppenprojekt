@@ -91,7 +91,7 @@ Y = v_df_clean['SalePrice']
 X_train, X_test, Y_train, Y_test = train_test_split( X, Y, test_size=0.2, random_state=12)
 
 
-#random forest model 
+#random forest model because it was much more stable in our tests than the linear models
 crowdfunding = RandomForestRegressor(
     n_estimators=200, #200 "trees" are trained 
     max_depth=20, #chose depth 20 so that the model does not over- or underfit
@@ -376,7 +376,8 @@ for prop in Properties:
                          f"{abs(percentage_diff):.2f}% more than its estimated acquisition price.")
 
 
-            #Scatterplot: Living area vs sale price (Training data + selected property)
+            #Implementing a scatterplot where the selected property lies compared to all properties in the training dataset
+            #It helps for the visualization to check if the chosen property is unusually expensive or cheap to similar living areas
 
             st.subheader("Market Positioning: Living area vs. sale price")
 
@@ -552,7 +553,7 @@ def show_project_calculator():
                 st.error(msg)
             st.stop()
 
-        # ---- Calculations (same as your friend’s file) ----
+        # Project Calculations 
         D11 = purchase_price_input
         D12 = reno_cost_input
         C15 = bank_share_percent
