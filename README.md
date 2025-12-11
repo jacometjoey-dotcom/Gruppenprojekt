@@ -69,8 +69,6 @@ Gruppenprojekt-main/
 ├── ames.csv                   # Training dataset (Ames Housing, adjusted for Swiss market)
 ├── data.csv                   # Additional data file
 │
-├── Feature_01.py              # Feature module 1 (placeholder utilities)
-├── Feature_02.py              # Feature module 2 (placeholder utilities)
 │
 ├── factsheet/                 # Property factsheet PDFs
 │   ├── Factsheet1.pdf
